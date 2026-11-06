@@ -1,4 +1,7 @@
-# Sitio estático: sin comando de build, se publica la raíz del repositorio.
+# Sitio estático + una función (lista de invitados en Netlify Blobs).
 [build]
-  publish = "."
+  publish = "public"
   command = ""
+
+[functions]
+  directory = "netlify/functions"

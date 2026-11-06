@@ -596,7 +596,8 @@ const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">"
 
 /* ---------- Invitado personalizado ----------
    Link bonito:   https://boda-garciahernandez.netlify.app/carola_marcela_clarissa
-   El nombre y los pases se leen de invitados.json (cifrado: sin el link no se puede leer la lista).
+   El nombre y los pases se consultan a la función de Netlify (lista guardada desde el generador).
+   Solo se puede consultar un invitado a la vez, con su código exacto.
    Links antiguos (?i=código) siguen funcionando. */
 function normalizarCodigo(texto){
   return String(texto || "")
@@ -604,21 +605,13 @@ function normalizarCodigo(texto){
     .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()
     .split(/\s+/).filter(w => w && w !== "y" && w !== "e").join("_");
 }
-const hex = buf => Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2,"0")).join("");
-const sha = txt => crypto.subtle.digest("SHA-256", new TextEncoder().encode(txt));
 async function buscarInvitado(codigo){
-  if (!codigo || !(window.crypto && crypto.subtle)) return null;
+  if (!codigo) return null;
   try{
-    const resp = await fetch("/invitados.json", { cache: "no-cache" });
+    const resp = await fetch("/.netlify/functions/invitados?c=" + encodeURIComponent(codigo), { cache: "no-store" });
     if (!resp.ok) return null;
-    const lista = await resp.json();
-    const id = hex(await sha("emv-id:" + codigo)).slice(0, 24);
-    const cifrado = lista.g && lista.g[id];
-    if (!cifrado) return null;
-    const bytes = Uint8Array.from(atob(cifrado), c => c.charCodeAt(0));
-    const clave = await crypto.subtle.importKey("raw", await sha("emv-key:" + codigo), "AES-GCM", false, ["decrypt"]);
-    const plano = await crypto.subtle.decrypt({ name: "AES-GCM", iv: bytes.slice(0, 12) }, clave, bytes.slice(12));
-    const d = JSON.parse(new TextDecoder().decode(plano));
+    const d = await resp.json();
+    if (!d || !d.n) return null;
     return { nombre: String(d.n).slice(0, 120), pases: Math.max(1, Math.min(20, parseInt(d.p, 10) || 1)), codigo };
   }catch(e){ return null; }
 }
