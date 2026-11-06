@@ -1,0 +1,916 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<base href="/">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eduardo & María Virginia · 12.12.2026</title>
+<meta name="description" content="Invitación a la boda de Eduardo y María Virginia — sábado 12 de diciembre de 2026, Maracaibo.">
+<meta property="og:title" content="Eduardo & María Virginia · Nuestra boda">
+<meta property="og:description" content="Sábado 12 de diciembre de 2026 · Maracaibo. Abre tu invitación y confirma tu asistencia.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://eduardoymariavirginia.netlify.app/">
+<meta property="og:image" content="https://eduardoymariavirginia.netlify.app/preview-v2.jpg">
+<meta property="og:image:width" content="800">
+<meta property="og:image:height" content="800">
+<meta property="og:image:alt" content="Monograma E M · Eduardo y María Virginia · 12 de diciembre de 2026">
+<meta property="og:locale" content="es_VE">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eduardoymariavirginia.netlify.app/preview-v2.jpg">
+<meta name="theme-color" content="#f5f3ee">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Pinyon+Script&display=swap" rel="stylesheet">
+<style>
+  /* ---------- PALETA DEL MOODBOARD ---------- */
+  :root{
+    --perla:#f5f3ee;          /* fondo general */
+    --perla-2:#edece7;        /* Blanco perla */
+    --papel:#fbfaf7;          /* tarjetas */
+    --salvia-claro:#b8bca5;   /* Salvia claro */
+    --salvia:#9ba578;         /* Verde salvia (monograma) */
+    --oliva:#636e3e;          /* Oliva */
+    --oliva-osc:#3a3f2e;      /* títulos */
+    --lino:#d6c5b2;           /* Taupe / lino */
+    --lino-claro:#ece3d7;
+    --esmoquin:#202020;       /* Negro esmoquin */
+    --texto:#4a4d42;
+    --texto-suave:#6f7264;
+    --linea:#dcdccf;
+    --sombra:0 12px 40px rgba(58,63,46,.10);
+    --radio:14px;
+    --serif:"Cormorant Garamond", Georgia, "Times New Roman", serif;
+    --script:"Pinyon Script", "Cormorant Garamond", cursive;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  section[id]{scroll-margin-top:64px}
+  body{
+    background:var(--perla);
+    color:var(--texto);
+    font-family:var(--serif);
+    font-size:20px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    font-variant-numeric:lining-nums;
+    overflow-x:hidden;
+  }
+  body.bloqueado{overflow:hidden;height:100vh}
+  a{color:inherit}
+  img{max-width:100%;display:block}
+
+  /* ---------- SOBRE DE ENTRADA ---------- */
+  #portada{
+    position:fixed;inset:0;z-index:100;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;
+    background:
+      radial-gradient(ellipse at 50% 40%, #fbfaf7 0%, var(--perla) 55%, var(--perla-2) 100%);
+    transition:opacity 1s ease, visibility 1s ease;
+    padding:16px;
+  }
+  #portada.oculta{opacity:0;visibility:hidden}
+  .portada-para{font-size:14px;font-weight:600;letter-spacing:.32em;text-transform:uppercase;color:var(--oliva);text-align:center}
+  .portada-nombre{font-family:var(--script);font-size:44px;color:var(--oliva-osc);text-align:center;line-height:1.2;margin-top:8px}
+  .sobre{
+    position:relative;width:min(340px,86vw);aspect-ratio:3/2;
+    perspective:900px;cursor:pointer;
+  }
+  .sobre-cuerpo{
+    position:absolute;inset:0;background:var(--lino-claro);
+    border-radius:6px;box-shadow:0 18px 40px rgba(58,63,46,.18);overflow:hidden;
+  }
+  .carta{
+    position:absolute;left:7%;right:7%;top:8%;height:84%;
+    background:var(--papel);border:1px solid var(--linea);border-radius:3px;
+    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;
+    transition:transform 1.1s cubic-bezier(.2,.8,.2,1) .45s;
+    z-index:1;
+  }
+  .carta img,.carta small{opacity:0;transition:opacity .4s ease .5s}
+  .sobre.abierto .carta img,.sobre.abierto .carta small{opacity:1}
+  .carta img{width:42%;height:auto}
+  .carta small{font-size:12px;font-weight:600;letter-spacing:.3em;color:var(--oliva)}
+  .sobre-frente{position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:6px;overflow:hidden}
+  .sobre-frente::before,.sobre-frente::after{
+    content:"";position:absolute;bottom:0;width:60%;height:100%;background:#e6dacb;
+  }
+  .sobre-frente::before{left:0;clip-path:polygon(0 0,100% 100%,0 100%)}
+  .sobre-frente::after{right:0;clip-path:polygon(100% 0,100% 100%,0 100%);background:#e2d5c4}
+  .solapa{
+    position:absolute;left:0;right:0;top:0;height:62%;z-index:3;
+    background:linear-gradient(180deg,#ddd0bf,#e4d8c9);clip-path:polygon(0 0,100% 0,50% 100%);
+    transform-origin:top center;transition:transform .7s ease, z-index 0s .35s;
+    border-radius:6px 6px 0 0;
+  }
+  .sello{
+    position:absolute;left:50%;top:62%;transform:translate(-50%,-50%);z-index:4;
+    width:82px;height:82px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #7c8851, var(--oliva) 58%, #4a5330);
+    box-shadow:0 5px 14px rgba(40,46,25,.35), inset 0 0 0 4px rgba(255,255,255,.08), inset 0 0 0 6px rgba(0,0,0,.06);
+    display:flex;align-items:center;justify-content:center;
+    transition:opacity .4s ease, transform .4s ease;
+    animation:latido 2.4s ease-in-out infinite;
+  }
+  .sello img{width:62%;height:auto}
+  @keyframes latido{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.06)}}
+  .sobre.abierto .sello{opacity:0;transform:translate(-50%,-50%) scale(.6);animation:none}
+  .sobre.abierto .solapa{transform:rotateX(180deg);z-index:0}
+  .sobre.abierto .carta{transform:translateY(-58%)}
+  .portada-hint{font-size:13px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--salvia);animation:parpadeo 2s ease-in-out infinite}
+  @keyframes parpadeo{0%,100%{opacity:.5}50%{opacity:1}}
+
+  /* ---------- ESTRUCTURA ---------- */
+  main{max-width:780px;margin:0 auto;padding:0 16px}
+  section{padding:80px 0;text-align:center}
+  .encabezado{margin-bottom:8px}
+  .eyebrow{font-style:italic;font-size:20px;color:var(--oliva)}
+  h2{
+    font-family:var(--serif);font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+    font-size:clamp(30px,7vw,42px);color:var(--oliva-osc);line-height:1.15;margin:2px 0 14px;
+  }
+  .regla{width:150px;height:1.5px;background:var(--salvia-claro);margin:0 auto 22px}
+  .texto{color:var(--texto-suave);max-width:540px;margin:0 auto}
+  .ramita{display:block;margin:0 auto 14px;width:120px;height:auto;color:var(--salvia)}
+  .revelar{opacity:0;transform:translateY(24px);transition:opacity .9s ease, transform .9s ease}
+  .revelar.visible{opacity:1;transform:none}
+
+  /* ---------- HERO ---------- */
+  #inicio{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding-top:84px}
+  .marco{
+    position:relative;background:var(--papel);border-radius:var(--radio);
+    padding:52px 22px 46px;box-shadow:var(--sombra);margin:8px;
+    border:1px solid var(--linea);
+  }
+  .marco::before{
+    content:"";position:absolute;inset:10px;border:1px solid var(--salvia-claro);border-radius:calc(var(--radio) - 6px);pointer-events:none;
+  }
+  .monograma{width:min(160px,44vw);margin:0 auto 16px}
+  .bendicion{font-style:italic;font-size:20px;color:var(--oliva);line-height:1.4}
+  .padres{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;max-width:320px;margin:10px auto 0;font-size:15px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--oliva-osc);line-height:1.8}
+  .padres div:nth-child(odd){text-align:right}
+  .padres div:nth-child(even){text-align:left}
+  .nombres{font-family:var(--script);font-weight:400;font-size:clamp(44px,11vw,70px);line-height:1.15;color:var(--oliva-osc);margin:14px 0 8px}
+  .nombres .y{display:block;font-family:var(--serif);font-style:italic;font-size:.4em;color:var(--salvia);line-height:1.4}
+  .fecha{display:inline-block;margin-top:24px;padding:12px 26px;border-top:1.5px solid var(--salvia-claro);border-bottom:1.5px solid var(--salvia-claro);text-transform:uppercase}
+  .fecha-dia{font-size:15px;font-weight:700;letter-spacing:.34em;color:var(--oliva)}
+  .fecha-completa{font-size:clamp(19px,5.2vw,28px);font-weight:700;letter-spacing:.1em;white-space:nowrap;color:var(--oliva-osc);line-height:1.4}
+  .saludo{margin-top:32px;padding-top:26px;border-top:1px solid var(--linea)}
+  .saludo .para{font-family:var(--script);font-size:40px;color:var(--oliva-osc);line-height:1.3}
+  .saludo .pases{font-style:italic;font-size:19px;color:var(--texto-suave);margin-top:4px}
+  .saludo .pases b{font-style:normal;font-weight:700;color:var(--oliva)}
+
+  /* ---------- CUENTA REGRESIVA ---------- */
+  .contador{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:500px;margin:8px auto 0}
+  .contador div{background:var(--papel);border:1px solid var(--linea);padding:18px 4px 14px;border-radius:var(--radio)}
+  .contador b{display:block;font-size:clamp(34px,8vw,46px);font-weight:600;color:var(--oliva);line-height:1}
+  .contador small{font-size:12px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--texto-suave)}
+  .botones{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:28px}
+  .btn{
+    font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;
+    padding:13px 24px;border:1.5px solid var(--oliva);color:var(--oliva);background:transparent;cursor:pointer;
+    transition:background .25s, color .25s;border-radius:999px;
+  }
+  .btn:hover,.btn:focus-visible{background:var(--oliva);color:var(--perla);outline:none}
+  .btn.lleno{background:var(--oliva);color:var(--perla)}
+  .btn.lleno:hover,.btn.lleno:focus-visible{background:var(--oliva-osc);border-color:var(--oliva-osc)}
+
+  /* ---------- LUGARES ---------- */
+  .lugares{display:grid;gap:22px;margin-top:10px}
+  @media(min-width:720px){.lugares{grid-template-columns:1fr 1fr}}
+  .lugar{background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);padding:30px 18px 24px;box-shadow:var(--sombra)}
+  .lugar .tipo{font-style:italic;font-size:19px;color:var(--oliva)}
+  .lugar h3{font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:24px;color:var(--oliva-osc);line-height:1.2;margin:2px 0 6px}
+  .lugar .hora{display:inline-block;font-size:14px;font-weight:700;letter-spacing:.2em;color:var(--perla);background:var(--oliva);padding:4px 14px;border-radius:999px;margin:4px 0 12px}
+  .lugar .nombre-lugar{font-size:22px;font-weight:600;color:var(--esmoquin);line-height:1.3}
+  .lugar .dir{font-size:18px;color:var(--texto-suave)}
+  .nota-lugar{display:inline-flex;align-items:center;gap:8px;margin-top:12px;font-style:italic;font-size:18px;color:var(--oliva)}
+  .nota-lugar svg{width:22px;height:22px;flex:none}
+  .foto-lugar{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:calc(var(--radio) - 4px);margin-top:16px}
+  .mapa{margin-top:12px;aspect-ratio:4/3;border-radius:calc(var(--radio) - 4px);overflow:hidden;filter:saturate(.55) sepia(.12)}
+  .mapa iframe{width:100%;height:100%;border:0}
+  .lugar .botones{margin-top:18px}
+
+  /* ---------- ITINERARIO ---------- */
+  .linea-tiempo{position:relative;max-width:460px;margin:10px auto 0;text-align:left}
+  .linea-tiempo::before{content:"";position:absolute;left:92px;top:8px;bottom:8px;width:1.5px;background:var(--salvia-claro)}
+  .hito{display:grid;grid-template-columns:80px 1fr;gap:28px;padding:14px 0;position:relative}
+  .hito::before{content:"";position:absolute;left:86px;top:24px;width:14px;height:14px;border-radius:50%;background:var(--salvia);box-shadow:0 0 0 4px var(--perla)}
+  .hito time{font-size:16px;font-weight:700;letter-spacing:.06em;color:var(--oliva);text-align:right;padding-top:4px}
+  .hito b{display:block;font-weight:700;font-size:22px;color:var(--oliva-osc)}
+  .hito span{color:var(--texto-suave);font-size:18px;font-style:italic}
+
+  /* ---------- VESTIMENTA ---------- */
+  .tarjeta-suave{background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);padding:34px 22px;max-width:560px;margin:6px auto 0;box-shadow:var(--sombra)}
+  .vestimenta{font-size:30px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--oliva-osc);margin-bottom:6px}
+  .nota{font-style:italic;color:var(--oliva);font-size:19px;margin-top:14px}
+  .cortejo{margin-top:28px;padding-top:26px;border-top:1px solid var(--linea)}
+  .cortejo-titulo{font-size:26px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--oliva-osc)}
+  .muestras{display:flex;justify-content:center;margin:18px 0 14px}
+  .muestras i{width:54px;height:54px;border-radius:50%;border:3px solid var(--papel);margin-left:-14px;box-shadow:0 2px 6px rgba(58,63,46,.15)}
+  .muestras i:first-child{margin-left:0}
+  .cortejo-aviso{font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--oliva)}
+
+  /* ---------- REGALOS ---------- */
+  .datos-regalo{display:none;margin:22px auto 0;max-width:420px;text-align:left}
+  .datos-regalo.visible{display:grid;gap:14px}
+  .metodo{background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);padding:20px 20px 8px;box-shadow:var(--sombra)}
+  .metodo h3{font-size:15px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--oliva);margin-bottom:6px}
+  .dato{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-top:1px solid var(--linea)}
+  .dato:first-of-type{border-top:none}
+  .dato small{display:block;font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--texto-suave)}
+  .dato strong{font-weight:700;font-size:21px;color:var(--esmoquin)}
+  .copiar{font-family:var(--serif);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:7px 12px;border:1.5px solid var(--salvia-claro);background:transparent;color:var(--oliva);cursor:pointer;white-space:nowrap;border-radius:999px}
+  .copiar:hover{background:var(--salvia);color:var(--perla);border-color:var(--salvia)}
+
+  /* ---------- RSVP ---------- */
+  form{max-width:500px;margin:30px auto 0;text-align:left;background:var(--papel);border:1px solid var(--linea);border-radius:var(--radio);padding:30px 22px;box-shadow:var(--sombra)}
+  .campo{margin-bottom:20px}
+  .tit{display:block;font-size:13px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--oliva);margin-bottom:8px}
+  input[type=text],select,textarea{
+    width:100%;font-family:var(--serif);font-size:20px;color:var(--esmoquin);
+    background:transparent;border:none;border-bottom:1.5px solid var(--salvia-claro);padding:8px 2px;border-radius:0;
+  }
+  select{appearance:auto}
+  textarea{resize:vertical;min-height:80px;border:1.5px solid var(--linea);border-radius:10px;padding:10px 12px}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--oliva)}
+  ::placeholder{color:#a3a597;font-style:italic}
+  .opciones{display:grid;gap:10px}
+  .opcion{display:flex;align-items:center;gap:12px;border:1.5px solid var(--linea);border-radius:12px;padding:12px 14px;cursor:pointer;transition:border-color .2s, background .2s;font-size:19px}
+  .opcion:has(input:checked){border-color:var(--salvia);background:#f1f2ea}
+  .opcion input{accent-color:var(--oliva);width:18px;height:18px}
+  .oculto{display:none!important}
+  .enviar{width:100%;margin-top:6px}
+  .estado{margin-top:14px;text-align:center;font-size:18px;min-height:1em}
+  .estado.error{color:#7a3b2e}
+  .gracias{max-width:500px;margin:30px auto 0;background:var(--papel);border:1px solid var(--salvia-claro);border-radius:var(--radio);padding:36px 22px}
+  .gracias .script{font-family:var(--script);font-size:46px;color:var(--oliva-osc);line-height:1.2}
+  .limite{display:inline-block;font-size:14px;font-weight:700;letter-spacing:.16em;color:var(--oliva);margin-top:14px;text-transform:uppercase;border-top:1.5px solid var(--salvia-claro);border-bottom:1.5px solid var(--salvia-claro);padding:6px 12px}
+
+  /* ---------- PIE ---------- */
+  footer{text-align:center;padding:40px 16px 100px}
+  footer .monograma{width:110px;margin-bottom:12px;opacity:.9}
+  footer .nombres{font-size:clamp(40px,10vw,56px)}
+  footer p{font-size:14px;font-weight:600;letter-spacing:.32em;text-transform:uppercase;color:var(--texto-suave)}
+
+  /* ---------- MENÚ SUPERIOR ---------- */
+  .menu{
+    position:fixed;top:0;left:0;right:0;z-index:60;background:rgba(32,32,32,.96);
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    transform:translateY(-100%);transition:transform .5s ease;
+  }
+  body:not(.bloqueado) .menu{transform:none}
+  .menu-barra{max-width:1100px;margin:0 auto;height:58px;display:flex;align-items:center;justify-content:center;padding:0 16px}
+  .menu-logo{display:none;width:44px;height:auto}
+  .menu ul{list-style:none;display:flex;align-items:center;gap:clamp(14px,2.6vw,38px)}
+  .menu a{font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--perla);text-decoration:none;padding:6px 0;border-bottom:1.5px solid transparent;transition:border-color .2s,color .2s;white-space:nowrap}
+  .menu a:hover,.menu a.activo{border-bottom-color:var(--salvia);color:#fff}
+  .menu a.destacado{border:1.5px solid var(--salvia);padding:8px 18px;border-radius:2px}
+  .menu a.destacado:hover,.menu a.destacado.activo{background:var(--salvia);color:var(--esmoquin)}
+  .menu-toggle{display:none;background:none;border:0;color:var(--perla);font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;cursor:pointer;align-items:center;gap:10px}
+  .menu-toggle i{display:block;width:20px;height:1.5px;background:currentColor;position:relative}
+  .menu-toggle i::before,.menu-toggle i::after{content:"";position:absolute;left:0;width:20px;height:1.5px;background:currentColor}
+  .menu-toggle i::before{top:-6px}.menu-toggle i::after{top:6px}
+  @media (max-width:860px){
+    .menu-barra{justify-content:space-between}
+    .menu-logo{display:block}
+    .menu-toggle{display:flex}
+    .menu ul{position:absolute;top:58px;left:0;right:0;flex-direction:column;gap:0;background:rgba(32,32,32,.98);max-height:0;overflow:hidden;transition:max-height .4s ease}
+    .menu.abierto ul{max-height:480px;padding-bottom:12px}
+    .menu li{width:100%;text-align:center}
+    .menu a{display:inline-block;padding:13px 0}
+    .menu a.destacado{margin-top:8px}
+  }
+
+  /* ---------- MÚSICA ---------- */
+  #musica{
+    position:fixed;right:16px;bottom:16px;z-index:50;width:52px;height:52px;border-radius:50%;
+    border:1.5px solid var(--salvia);background:var(--papel);color:var(--oliva);cursor:pointer;
+    box-shadow:var(--sombra);display:flex;align-items:center;justify-content:center;font-size:22px;
+  }
+  #musica.sonando{animation:girar 6s linear infinite}
+  @keyframes girar{to{transform:rotate(360deg)}}
+
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none!important;transition:none!important}
+    .revelar{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body class="bloqueado">
+
+<!-- Ramita de eucalipto reutilizable -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ramita" viewBox="0 0 120 24">
+    <path d="M4 12 H116" stroke="currentColor" stroke-width="1.2" fill="none"/>
+    <g fill="currentColor" opacity=".85">
+      <ellipse cx="60" cy="12" rx="4" ry="4"/>
+      <ellipse cx="44" cy="7" rx="6" ry="3" transform="rotate(-25 44 7)"/>
+      <ellipse cx="44" cy="17" rx="6" ry="3" transform="rotate(25 44 17)"/>
+      <ellipse cx="30" cy="8" rx="5" ry="2.6" transform="rotate(-25 30 8)"/>
+      <ellipse cx="30" cy="16" rx="5" ry="2.6" transform="rotate(25 30 16)"/>
+      <ellipse cx="76" cy="7" rx="6" ry="3" transform="rotate(25 76 7)"/>
+      <ellipse cx="76" cy="17" rx="6" ry="3" transform="rotate(-25 76 17)"/>
+      <ellipse cx="90" cy="8" rx="5" ry="2.6" transform="rotate(25 90 8)"/>
+      <ellipse cx="90" cy="16" rx="5" ry="2.6" transform="rotate(-25 90 16)"/>
+    </g>
+  </symbol>
+</svg>
+
+<!-- ================= SOBRE DE ENTRADA ================= -->
+<div id="portada" role="dialog" aria-label="Abrir invitación">
+  <div>
+    <div class="portada-para" id="portadaPara">Tienes una invitación especial</div>
+    <div class="portada-nombre" id="portadaNombre"></div>
+  </div>
+  <div class="sobre" id="sobre" tabindex="0" role="button" aria-label="Toca el sello para abrir la invitación">
+    <div class="sobre-cuerpo"></div>
+    <div class="carta"><img src="monograma.png" alt=""><small>12 · 12 · 2026</small></div>
+    <div class="sobre-frente"></div>
+    <div class="solapa"></div>
+    <div class="sello"><img src="monograma-claro.png" alt="E M"></div>
+  </div>
+  <div class="portada-hint">Toca el sello para abrir</div>
+</div>
+
+<button id="musica" class="oculto" aria-label="Pausar o reproducir música">♪</button>
+<audio id="audio" src="musica.mp3" loop preload="none"></audio>
+
+<nav class="menu" id="menu" aria-label="Secciones de la invitación">
+  <div class="menu-barra">
+    <img class="menu-logo" src="monograma-claro.png" alt="E M">
+    <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="menuLista"><i></i>Menú</button>
+    <ul id="menuLista">
+      <li><a href="#inicio">Inicio</a></li>
+      <li><a href="#cuenta">Fecha</a></li>
+      <li><a href="#lugares">Ceremonia</a></li>
+      <li><a href="#itinerario">Itinerario</a></li>
+      <li><a href="#rsvp">Confirmar</a></li>
+      <li><a href="#vestimenta">Vestimenta</a></li>
+      <li><a href="#regalos" class="destacado">Regalo</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+  <!-- ================= INICIO ================= -->
+  <section id="inicio">
+    <div class="marco revelar">
+      <img class="monograma" src="monograma.png" alt="Monograma E M">
+      <div class="bendicion">Con la bendición de Dios y de nuestros padres</div>
+      <div class="padres" id="padres"></div>
+      <h1 class="nombres"><span id="novio1"></span><span class="y">y</span><span id="novio2"></span></h1>
+      <p class="texto">tenemos el honor de invitarle a celebrar el sacramento de nuestro matrimonio</p>
+      <div class="fecha">
+        <div class="fecha-dia">Sábado</div>
+        <div class="fecha-completa">12 Diciembre 2026</div>
+      </div>
+      <div class="saludo oculto" id="saludo">
+        <div class="para" id="saludoNombre"></div>
+        <div class="pases" id="saludoPases"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CUENTA REGRESIVA ================= -->
+  <section id="cuenta">
+    <div class="revelar">
+      <svg class="ramita" viewBox="0 0 120 24"><use href="#ramita"/></svg>
+      <div class="eyebrow">Falta muy poco</div>
+      <h2>Cuenta regresiva</h2>
+      <div class="regla"></div>
+      <div class="contador" aria-live="polite">
+        <div><b id="cDias">0</b><small>Días</small></div>
+        <div><b id="cHoras">0</b><small>Horas</small></div>
+        <div><b id="cMin">0</b><small>Min</small></div>
+        <div><b id="cSeg">0</b><small>Seg</small></div>
+      </div>
+      <div class="botones">
+        <a class="btn" id="btnGoogleCal" target="_blank" rel="noopener">Google Calendar</a>
+        <button class="btn" id="btnIcs" type="button">Apple / Outlook</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LUGARES ================= -->
+  <section id="lugares">
+    <div class="revelar">
+      <svg class="ramita" viewBox="0 0 120 24"><use href="#ramita"/></svg>
+      <div class="eyebrow">Dónde y cuándo</div>
+      <h2>El gran día</h2>
+      <div class="regla"></div>
+    </div>
+    <div class="lugares" id="contLugares"></div>
+  </section>
+
+  <!-- ================= ITINERARIO ================= -->
+  <section id="itinerario">
+    <div class="revelar">
+      <svg class="ramita" viewBox="0 0 120 24"><use href="#ramita"/></svg>
+      <div class="eyebrow">Programa</div>
+      <h2>Itinerario</h2>
+      <div class="regla"></div>
+      <div class="linea-tiempo" id="contItinerario"></div>
+    </div>
+  </section>
+
+  <!-- ================= RSVP ================= -->
+  <section id="rsvp">
+    <div class="revelar">
+      <svg class="ramita" viewBox="0 0 120 24"><use href="#ramita"/></svg>
+      <h2>¿Nos acompañas?</h2>
+      <div class="regla"></div>
+      <p class="texto">Tu presencia es el mejor regalo. Por favor ayúdanos a organizar todo confirmando tu asistencia.</p>
+      <div class="limite" id="fechaLimite"></div>
+    </div>
+
+    <!-- Formulario detectado por Netlify Forms -->
+    <form name="rsvp" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="formRsvp" class="revelar">
+      <input type="hidden" name="form-name" value="rsvp">
+      <input type="hidden" name="invitacion" id="fInvitacion">
+      <input type="hidden" name="pases_asignados" id="fPasesAsignados">
+      <input type="hidden" name="codigo" id="fCodigo">
+      <p class="oculto"><label>No llenar: <input name="bot-field"></label></p>
+
+      <div class="campo">
+        <label class="tit" for="fNombre">Nombre / Familia</label>
+        <input type="text" id="fNombre" name="nombre" required autocomplete="name" placeholder="Escribe tu nombre">
+      </div>
+
+      <div class="campo">
+        <span class="tit">¿Asistirás?</span>
+        <div class="opciones">
+          <label class="opcion"><input type="radio" name="asistencia" value="Sí asistirá" required> Con mucho gusto asistiré</label>
+          <label class="opcion"><input type="radio" name="asistencia" value="No asistirá"> Lamentablemente no podré asistir</label>
+        </div>
+      </div>
+
+      <div class="campo" id="campoPases">
+        <label class="tit" for="fPases">Número de asistentes</label>
+        <select id="fPases" name="asistentes"></select>
+      </div>
+
+      <div class="campo" id="campoAcomp">
+        <label class="tit" for="fAcomp">Nombres de los asistentes</label>
+        <input type="text" id="fAcomp" name="nombres_asistentes" placeholder="Ej.: Ana Pérez, Luis Pérez">
+      </div>
+
+      <div class="campo" id="campoDieta">
+        <label class="tit" for="fDieta">Alergias o restricciones alimentarias</label>
+        <input type="text" id="fDieta" name="restricciones" placeholder="Opcional">
+      </div>
+
+      <div class="campo">
+        <label class="tit" for="fMensaje">Mensaje para los novios</label>
+        <textarea id="fMensaje" name="mensaje" placeholder="Opcional"></textarea>
+      </div>
+
+      <button class="btn lleno enviar" type="submit" id="btnEnviar">Enviar confirmación</button>
+      <div class="estado" id="estado" role="status"></div>
+    </form>
+
+    <div class="gracias oculto" id="gracias">
+      <div class="script" id="graciasTitulo">¡Gracias!</div>
+      <p class="texto" id="graciasTexto"></p>
+      <div class="botones"><button class="btn" type="button" id="btnCambiar">Modificar respuesta</button></div>
+    </div>
+  </section>
+
+  <!-- ================= VESTIMENTA ================= -->
+  <section id="vestimenta">
+    <div class="revelar">
+      <svg class="ramita" viewBox="0 0 120 24"><use href="#ramita"/></svg>
+      <h2>Código de vestimenta</h2>
+      <div class="regla"></div>
+      <div class="tarjeta-suave">
+        <div class="vestimenta" id="codigoVestimenta"></div>
+        <p class="texto" id="detalleVestimenta"></p>
+        <div class="cortejo">
+          <div class="cortejo-titulo">Color de la boda</div>
+          <div class="muestras" id="muestrasCortejo" aria-label="Gama de verde salvia de la boda"></div>
+          <p class="cortejo-aviso" id="avisoCortejo"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= REGALOS ================= -->
+  <section id="regalos">
+    <div class="revelar">
+      <svg class="ramita" viewBox="0 0 120 24"><use href="#ramita"/></svg>
+      <h2>Regalo de bodas</h2>
+      <div class="regla"></div>
+      <p class="texto" id="textoRegalos"></p>
+      <div class="botones oculto" id="contBtnRegalo">
+        <button class="btn" type="button" id="btnRegalo">Ver datos</button>
+      </div>
+      <div class="datos-regalo" id="datosRegalo"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <img class="monograma" src="monograma.png" alt="">
+  <div class="nombres" id="pieNombres"></div>
+  <p>12-12-2026</p>
+  <p id="hashtag" style="margin-top:10px"></p>
+</footer>
+
+<script>
+/* =====================================================================
+   CONFIGURACIÓN — edita aquí los datos de la boda
+   ===================================================================== */
+const BODA = {
+  novio1: "Eduardo",
+  novio2: "María Virginia",
+  // Se muestran en dos columnas: [izquierda, derecha] por fila
+  padres: [["Luis", "José"], ["Mónica", "Cinthya"]],
+  hashtag: "",                                   // ej. "#EduardoYMariaVirginia" (vacío = no se muestra)
+
+  // Hora de inicio de la ceremonia y cierre estimado (hora de Venezuela, UTC-4)
+  inicio: "2026-12-12T20:00:00-04:00",
+  fin:    "2026-12-13T03:00:00-04:00",
+
+  lugares: [
+    {
+      tipo: "Ceremonia religiosa",
+      titulo: "Ceremonia",
+      hora: "8:00 p. m.",
+      nombre: "Capilla del Hogar Clínica San Rafael",
+      direccion: "Calle 64 con Av. 3F, Maracaibo, Zulia",
+      mapaEmbed: "Hogar Clínica San Rafael, Calle 64 con Av. 3F, Maracaibo, Zulia, Venezuela",
+      linkMapa: "https://share.google/4KOBMh9coFPY5QKx2",
+      foto: "capilla.jpg",
+      nota: "Estacionamiento disponible"
+    },
+    {
+      tipo: "Celebración",
+      titulo: "Recepción",
+      hora: "9:00 p. m.",
+      nombre: "Regine's",
+      direccion: "Av. 13A entre calles 71 y 72, Maracaibo, Zulia",
+      mapaEmbed: "Regine's, Av. 13A entre calles 71 y 72, Maracaibo, Zulia, Venezuela",
+      linkMapa: "https://share.google/DCUVQLnSf1VGaunb2",
+      foto: "regines.jpg",
+      fotoPos: "center 62%",
+      nota: "Estacionamiento disponible"
+    }
+  ],
+
+  // Agrega aquí más momentos de la noche cuando tengas las horas (primer baile, cena, etc.)
+  itinerario: [
+    { hora: "8:00 pm", titulo: "Ceremonia religiosa", detalle: "Capilla del Hogar Clínica San Rafael" },
+    { hora: "9:00 pm", titulo: "Recepción",           detalle: "Regine's" }
+  ],
+
+  vestimenta: {
+    codigo: "Etiqueta formal",
+    detalle: "Caballeros: traje oscuro y corbata · Damas: vestido largo",
+    cortejoColores: ["#c9cfb4", "#b3bc98", "#9ba578", "#7d8858"],
+    cortejoAviso: "(Estos colores solo serán utilizados por las damas de honor y el cortejo)"
+  },
+
+  regalos: {
+    texto: "Tu presencia es nuestro mayor regalo. Si además deseas tener un detalle con nosotros, puedes hacerlo a través de:",
+    // Cada método se muestra como una tarjeta con botón de copiar en cada dato.
+    // Para agregar otro método (ej. Zelle): { metodo: "Zelle", datos: [{ etiqueta: "Correo", valor: "..." }, { etiqueta: "Titular", valor: "..." }] }
+    metodos: [
+      {
+        metodo: "Transferencia bancaria",
+        datos: [
+          { etiqueta: "Routing Number", valor: "063104668" },
+          { etiqueta: "Account Number", valor: "0382878080" },
+          { etiqueta: "Titular",        valor: "Eduardo Garcia Martinez" }
+        ]
+      }
+    ]
+  },
+
+  rsvp: {
+    fechaLimite: "Antes del 30 de noviembre de 2026",
+    maxPasesSinLink: 2,                                  // pases máximos si alguien entra sin link personalizado
+    whatsapp: "584126612391"                             // respaldo si falla el envío
+  }
+};
+/* ===================================================================== */
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------- Invitado personalizado ----------
+   Link bonito:   https://eduardoymariavirginia.netlify.app/carola_marcela_clarissa
+   El nombre y los pases se leen de invitados.json (cifrado: sin el link no se puede leer la lista).
+   Links antiguos (?i=código) siguen funcionando. */
+function normalizarCodigo(texto){
+  return String(texto || "")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()
+    .split(/\s+/).filter(w => w && w !== "y" && w !== "e").join("_");
+}
+const hex = buf => Array.from(new Uint8Array(buf), b => b.toString(16).padStart(2,"0")).join("");
+const sha = txt => crypto.subtle.digest("SHA-256", new TextEncoder().encode(txt));
+async function buscarInvitado(codigo){
+  if (!codigo || !(window.crypto && crypto.subtle)) return null;
+  try{
+    const resp = await fetch("/invitados.json", { cache: "no-cache" });
+    if (!resp.ok) return null;
+    const lista = await resp.json();
+    const id = hex(await sha("emv-id:" + codigo)).slice(0, 24);
+    const cifrado = lista.g && lista.g[id];
+    if (!cifrado) return null;
+    const bytes = Uint8Array.from(atob(cifrado), c => c.charCodeAt(0));
+    const clave = await crypto.subtle.importKey("raw", await sha("emv-key:" + codigo), "AES-GCM", false, ["decrypt"]);
+    const plano = await crypto.subtle.decrypt({ name: "AES-GCM", iv: bytes.slice(0, 12) }, clave, bytes.slice(12));
+    const d = JSON.parse(new TextDecoder().decode(plano));
+    return { nombre: String(d.n).slice(0, 120), pases: Math.max(1, Math.min(20, parseInt(d.p, 10) || 1)), codigo };
+  }catch(e){ return null; }
+}
+function decodificar(s){
+  try{
+    s = s.replace(/-/g,"+").replace(/_/g,"/");
+    while (s.length % 4) s += "=";
+    const bytes = Uint8Array.from(atob(s), c => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }catch(e){ return null; }
+}
+async function resolverInvitado(){
+  const params = new URLSearchParams(location.search);
+  if (params.get("i")) {
+    const d = decodificar(params.get("i"));
+    if (d && d.n) return { nombre: String(d.n).slice(0,120), pases: Math.max(1, Math.min(20, parseInt(d.p,10) || 1)), codigo: "" };
+  }
+  let ruta = location.pathname;
+  try { ruta = decodeURIComponent(ruta); } catch(e) {}
+  ruta = ruta.replace(/^\/+|\/+$/g, "");
+  if (!ruta || /\.html?$/i.test(ruta)) return null;
+  return await buscarInvitado(normalizarCodigo(ruta));
+}
+
+(async () => {
+const invitado = await resolverInvitado();
+
+/* ---------- Pintar contenido ---------- */
+$("novio1").textContent = BODA.novio1;
+$("novio2").textContent = BODA.novio2;
+$("pieNombres").innerHTML = esc(BODA.novio1) + ' <span style="font-family:var(--serif);font-style:italic;font-size:.5em;color:var(--salvia)">y</span> ' + esc(BODA.novio2);
+if (BODA.hashtag) $("hashtag").textContent = BODA.hashtag;
+
+if (invitado) {
+  $("portadaPara").textContent = "Invitación para";
+  $("portadaNombre").textContent = invitado.nombre;
+  $("saludo").classList.remove("oculto");
+  $("saludoNombre").textContent = invitado.nombre;
+  $("saludoPases").innerHTML = invitado.pases === 1
+    ? "¡Hemos reservado <b>1 lugar</b> para ti!"
+    : "¡Hemos reservado <b>" + invitado.pases + " lugares</b> para ustedes!";
+}
+
+$("contLugares").innerHTML = BODA.lugares.map(l => {
+  const q = encodeURIComponent(l.mapaEmbed);
+  const link = l.linkMapa || ("https://www.google.com/maps/search/?api=1&query=" + q);
+  return `
+  <article class="lugar revelar">
+    <div class="tipo">${esc(l.tipo)}</div>
+    <h3>${esc(l.titulo)}</h3>
+    <div class="hora">${esc(l.hora)}</div>
+    <div class="nombre-lugar">${esc(l.nombre)}</div>
+    <div class="dir">${esc(l.direccion)}</div>
+    ${l.nota ? `<div class="nota-lugar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 17V7h3.6a3 3 0 0 1 0 6H9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>${esc(l.nota)}</div>` : ""}
+    ${l.foto ? `<img class="foto-lugar" src="${esc(l.foto)}" style="object-position:${esc(l.fotoPos || "center")}" alt="Fachada de ${esc(l.nombre)}" loading="lazy">` : ""}
+    <div class="mapa"><iframe loading="lazy" title="Mapa ${esc(l.nombre)}" src="https://www.google.com/maps?q=${q}&output=embed"></iframe></div>
+    <div class="botones">
+      <a class="btn" target="_blank" rel="noopener" href="${esc(link)}">Cómo llegar</a>
+    </div>
+  </article>`;
+}).join("");
+
+$("contItinerario").innerHTML = BODA.itinerario.map(h => `
+  <div class="hito"><time>${esc(h.hora)}</time><div><b>${esc(h.titulo)}</b>${h.detalle ? `<span>${esc(h.detalle)}</span>` : ""}</div></div>
+`).join("");
+
+$("codigoVestimenta").textContent = BODA.vestimenta.codigo;
+$("detalleVestimenta").textContent = BODA.vestimenta.detalle;
+$("muestrasCortejo").innerHTML = BODA.vestimenta.cortejoColores.map(c => `<i style="background:${esc(c)}"></i>`).join("");
+$("avisoCortejo").textContent = BODA.vestimenta.cortejoAviso;
+$("padres").innerHTML = BODA.padres.map(f => f.map(n => `<div>${esc(n)}</div>`).join("")).join("");
+
+/* ---------- Regalos ---------- */
+$("textoRegalos").textContent = BODA.regalos.texto;
+const metodos = (BODA.regalos.metodos || []).filter(m => m.datos && m.datos.length);
+if (metodos.length) {
+  $("contBtnRegalo").classList.remove("oculto");
+  $("datosRegalo").innerHTML = metodos.map(m => `
+    <div class="metodo">
+      <h3>${esc(m.metodo)}</h3>
+      ${m.datos.map(d => `
+        <div class="dato">
+          <div><small>${esc(d.etiqueta)}</small><strong>${esc(d.valor)}</strong></div>
+          <button class="copiar" type="button" data-valor="${esc(d.valor)}">Copiar</button>
+        </div>`).join("")}
+    </div>`).join("");
+  $("btnRegalo").addEventListener("click", () => {
+    const v = $("datosRegalo").classList.toggle("visible");
+    $("btnRegalo").textContent = v ? "Ocultar datos" : "Ver datos";
+  });
+  $("datosRegalo").addEventListener("click", async e => {
+    const b = e.target.closest(".copiar");
+    if (!b) return;
+    const valor = b.dataset.valor;
+    try { await navigator.clipboard.writeText(valor); b.textContent = "¡Copiado!"; }
+    catch(_) { prompt("Copia el dato:", valor); }
+    setTimeout(() => b.textContent = "Copiar", 1500);
+  });
+}
+
+$("fechaLimite").textContent = BODA.rsvp.fechaLimite;
+
+/* ---------- Sobre de entrada + música ---------- */
+const audio = $("audio");
+audio.addEventListener("canplay", () => { $("musica").classList.remove("oculto"); }, { once:true });
+audio.addEventListener("error", () => { $("musica").classList.add("oculto"); });
+
+function abrirSobre(){
+  const sobre = $("sobre");
+  if (sobre.classList.contains("abierto")) return;
+  sobre.classList.add("abierto");
+  audio.load();
+  audio.play().then(() => { $("musica").classList.remove("oculto"); $("musica").classList.add("sonando"); }).catch(() => {});
+  setTimeout(() => {
+    $("portada").classList.add("oculta");
+    document.body.classList.remove("bloqueado");
+    revisarRevelar();
+  }, 1700);
+}
+$("sobre").addEventListener("click", abrirSobre);
+$("sobre").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrirSobre(); } });
+
+$("musica").addEventListener("click", () => {
+  if (audio.paused) { audio.play().catch(() => {}); $("musica").classList.add("sonando"); }
+  else { audio.pause(); $("musica").classList.remove("sonando"); }
+});
+
+/* ---------- Aparición al hacer scroll ---------- */
+let observador = null;
+function revisarRevelar(){
+  const els = document.querySelectorAll(".revelar:not(.visible)");
+  if (!("IntersectionObserver" in window)) { els.forEach(e => e.classList.add("visible")); return; }
+  if (!observador) observador = new IntersectionObserver(entradas => {
+    entradas.forEach(en => { if (en.isIntersecting) { en.target.classList.add("visible"); observador.unobserve(en.target); } });
+  }, { threshold: .12 });
+  els.forEach(e => observador.observe(e));
+}
+
+/* ---------- Cuenta regresiva ---------- */
+const tInicio = new Date(BODA.inicio).getTime();
+function tick(){
+  let d = Math.max(0, tInicio - Date.now());
+  const dias = Math.floor(d / 864e5); d -= dias * 864e5;
+  const h = Math.floor(d / 36e5);     d -= h * 36e5;
+  const m = Math.floor(d / 6e4);      d -= m * 6e4;
+  const s = Math.floor(d / 1e3);
+  $("cDias").textContent = dias;
+  $("cHoras").textContent = String(h).padStart(2,"0");
+  $("cMin").textContent = String(m).padStart(2,"0");
+  $("cSeg").textContent = String(s).padStart(2,"0");
+}
+tick(); setInterval(tick, 1000);
+
+/* ---------- Agregar al calendario ---------- */
+const fmtUTC = iso => new Date(iso).toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+const titCal = `Boda de ${BODA.novio1} y ${BODA.novio2}`;
+const detCal = BODA.lugares.map(l => `${l.titulo}: ${l.nombre}, ${l.direccion} (${l.hora})`).join("\n");
+const lugCal = `${BODA.lugares[0].nombre}, ${BODA.lugares[0].direccion}`;
+$("btnGoogleCal").href = "https://calendar.google.com/calendar/render?action=TEMPLATE"
+  + "&text=" + encodeURIComponent(titCal)
+  + "&dates=" + fmtUTC(BODA.inicio) + "/" + fmtUTC(BODA.fin)
+  + "&details=" + encodeURIComponent(detCal + "\n\n" + location.href.split("?")[0])
+  + "&location=" + encodeURIComponent(lugCal);
+$("btnIcs").addEventListener("click", () => {
+  const icsEsc = s => s.replace(/\\/g,"\\\\").replace(/,/g,"\\,").replace(/;/g,"\\;").replace(/\n/g,"\\n");
+  const ics = [
+    "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Boda EyMV//ES","CALSCALE:GREGORIAN","METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    "UID:boda-eduardo-mariavirginia-20261212@invitacion",
+    "DTSTAMP:" + fmtUTC(new Date().toISOString()),
+    "DTSTART:" + fmtUTC(BODA.inicio),
+    "DTEND:" + fmtUTC(BODA.fin),
+    "SUMMARY:" + icsEsc(titCal),
+    "DESCRIPTION:" + icsEsc(detCal),
+    "LOCATION:" + icsEsc(lugCal),
+    "BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY","DESCRIPTION:Mañana es la boda","END:VALARM",
+    "END:VEVENT","END:VCALENDAR"
+  ].join("\r\n");
+  const url = URL.createObjectURL(new Blob([ics], { type:"text/calendar;charset=utf-8" }));
+  const a = document.createElement("a"); a.href = url; a.download = "boda-eduardo-maria-virginia.ics";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+/* ---------- RSVP ---------- */
+const form = $("formRsvp");
+const maxPases = invitado ? invitado.pases : BODA.rsvp.maxPasesSinLink;
+$("fPases").innerHTML = Array.from({ length: maxPases }, (_, i) => `<option value="${i+1}">${i+1} ${i === 0 ? "persona" : "personas"}</option>`).join("");
+$("fPases").value = String(maxPases);
+if (invitado) {
+  $("fNombre").value = invitado.nombre;
+  $("fInvitacion").value = invitado.nombre;
+  $("fPasesAsignados").value = invitado.pases;
+  $("fCodigo").value = invitado.codigo || "";
+} else {
+  $("fInvitacion").value = "(sin link personalizado)";
+  $("fPasesAsignados").value = "";
+}
+
+function actualizarCampos(){
+  const sel = form.querySelector('input[name="asistencia"]:checked');
+  const no = sel && sel.value === "No asistirá";
+  ["campoPases","campoAcomp","campoDieta"].forEach(id => $(id).classList.toggle("oculto", no));
+}
+form.querySelectorAll('input[name="asistencia"]').forEach(r => r.addEventListener("change", actualizarCampos));
+
+const claveLocal = "rsvp-boda-" + (invitado ? (invitado.codigo || invitado.nombre) : "general");
+function leerLocal(){ try { return JSON.parse(localStorage.getItem(claveLocal) || "null"); } catch(e){ return null; } }
+function guardarLocal(v){ try { localStorage.setItem(claveLocal, JSON.stringify(v)); } catch(e){} }
+
+function mostrarGracias(r){
+  form.classList.add("oculto");
+  $("gracias").classList.remove("oculto");
+  if (r.asistencia === "Sí asistirá") {
+    $("graciasTitulo").textContent = "¡Gracias por confirmar!";
+    $("graciasTexto").textContent = `Registramos ${r.asistentes} ${r.asistentes === "1" ? "asistente" : "asistentes"}. ¡Nos vemos el 12 de diciembre!`;
+  } else {
+    $("graciasTitulo").textContent = "Te extrañaremos";
+    $("graciasTexto").textContent = "Gracias por avisarnos. Te llevaremos en el corazón ese día.";
+  }
+}
+const previo = leerLocal();
+if (previo) mostrarGracias(previo);
+$("btnCambiar").addEventListener("click", () => {
+  $("gracias").classList.add("oculto");
+  form.classList.remove("oculto");
+  form.classList.add("visible");
+});
+
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+  const estado = $("estado");
+  const btn = $("btnEnviar");
+  const datos = new FormData(form);
+  if (datos.get("asistencia") === "No asistirá") datos.set("asistentes", "0");
+  btn.disabled = true; btn.textContent = "Enviando…";
+  estado.className = "estado"; estado.textContent = "";
+  try {
+    const resp = await fetch("/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams(datos).toString()
+    });
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    const r = { asistencia: datos.get("asistencia"), asistentes: String(datos.get("asistentes")) };
+    guardarLocal(r);
+    mostrarGracias(r);
+  } catch (err) {
+    const txt = encodeURIComponent(`Hola, quiero confirmar mi asistencia a la boda.\nNombre: ${datos.get("nombre")}\nRespuesta: ${datos.get("asistencia")}\nAsistentes: ${datos.get("asistentes")}`);
+    estado.className = "estado error";
+    estado.innerHTML = `No pudimos registrar tu respuesta. Inténtalo de nuevo o <a href="https://wa.me/${BODA.rsvp.whatsapp}?text=${txt}" target="_blank" rel="noopener">confírmanos por WhatsApp</a>.`;
+  } finally {
+    btn.disabled = false; btn.textContent = "Enviar confirmación";
+  }
+});
+
+/* ---------- Menú ---------- */
+const menu = $("menu");
+$("menuToggle").addEventListener("click", () => {
+  const abierto = menu.classList.toggle("abierto");
+  $("menuToggle").setAttribute("aria-expanded", abierto);
+});
+menu.querySelectorAll("a").forEach(a => a.addEventListener("click", e => {
+  e.preventDefault();
+  const destino = document.querySelector(a.getAttribute("href"));
+  menu.classList.remove("abierto"); $("menuToggle").setAttribute("aria-expanded", "false");
+  if (destino) {
+    destino.querySelectorAll(".revelar").forEach(el => el.classList.add("visible"));
+    destino.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}));
+if ("IntersectionObserver" in window) {
+  const enlaces = {};
+  menu.querySelectorAll("a").forEach(a => enlaces[a.getAttribute("href").slice(1)] = a);
+  const obsMenu = new IntersectionObserver(entradas => {
+    entradas.forEach(en => {
+      if (en.isIntersecting && enlaces[en.target.id]) {
+        Object.values(enlaces).forEach(x => x.classList.remove("activo"));
+        enlaces[en.target.id].classList.add("activo");
+      }
+    });
+  }, { rootMargin: "-45% 0px -50% 0px" });
+  document.querySelectorAll("main section[id]").forEach(sec => obsMenu.observe(sec));
+}
+
+revisarRevelar();
+})();
+</script>
+</body>
+</html>
