@@ -825,7 +825,10 @@ function actualizarCampos(){
 }
 form.querySelectorAll('input[name="asistencia"]').forEach(r => r.addEventListener("change", actualizarCampos));
 
-const claveLocal = "rsvp-boda-" + (invitado ? (invitado.codigo || invitado.nombre) : "general");
+// Una respuesta guardada por link (cada invitado / cada dirección por separado).
+// Para probar de nuevo en el mismo navegador: agrega ?nuevo al link o usa "Modificar respuesta".
+const claveLocal = "rsvp-boda-" + (invitado && invitado.codigo ? invitado.codigo : (location.pathname.replace(/\/+$/,"") || "/") + (invitado && !invitado.codigo ? "|" + invitado.nombre : ""));
+if (new URLSearchParams(location.search).has("nuevo")) { try { localStorage.removeItem(claveLocal); } catch(e) {} }
 function leerLocal(){ try { return JSON.parse(localStorage.getItem(claveLocal) || "null"); } catch(e){ return null; } }
 function guardarLocal(v){ try { localStorage.setItem(claveLocal, JSON.stringify(v)); } catch(e){} }
 
