@@ -1,6 +1,6 @@
 # Invitación de boda · Eduardo & María Virginia
 
-Sitio estático publicado en Netlify: https://eduardoymariavirginia.netlify.app
+Sitio estático publicado en Netlify: https://boda-garciahernandez.netlify.app
 
 - `index.html`: la invitación. Los datos (horas, lugares, vestimenta, regalo, RSVP) están en el bloque `CONFIGURACIÓN` del `<script>`.
 - `generador.html`: crea los links por invitado (`/nombre_apellido`) y el archivo `invitados.json`.
