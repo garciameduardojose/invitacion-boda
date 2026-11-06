@@ -451,11 +451,6 @@
         <select id="fPases" name="asistentes"></select>
       </div>
 
-      <div class="campo" id="campoAcomp">
-        <label class="tit" for="fAcomp">Nombres de los asistentes</label>
-        <input type="text" id="fAcomp" name="nombres_asistentes" placeholder="Ej.: Ana Pérez, Luis Pérez">
-      </div>
-
       <div class="campo" id="campoDieta">
         <label class="tit" for="fDieta">Alergias o restricciones alimentarias</label>
         <input type="text" id="fDieta" name="restricciones" placeholder="Opcional">
@@ -826,7 +821,7 @@ if (invitado) {
 function actualizarCampos(){
   const sel = form.querySelector('input[name="asistencia"]:checked');
   const no = sel && sel.value === "No asistirá";
-  ["campoPases","campoAcomp","campoDieta"].forEach(id => $(id).classList.toggle("oculto", no));
+  ["campoPases","campoDieta"].forEach(id => $(id).classList.toggle("oculto", no));
 }
 form.querySelectorAll('input[name="asistencia"]').forEach(r => r.addEventListener("change", actualizarCampos));
 
