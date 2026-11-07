@@ -3,9 +3,11 @@
 // Público (la invitación):
 //   GET  /.netlify/functions/invitados?c=carola_marcela_clarissa  -> { n, p }  (solo ese invitado)
 //
-// Privado (el generador; requiere la cabecera x-clave = ADMIN_PASSWORD):
+// Panel de invitados (dirección privada). Si existe ADMIN_PASSWORD en Netlify, se exige en la
+// cabecera x-clave; si no existe, el panel funciona sin contraseña.
 //   GET    /.netlify/functions/invitados                 -> { invitados: [...] }
-//   POST   /.netlify/functions/invitados  { invitados:[{nombre, pases, tel}] }  -> guarda / actualiza
+//   POST   /.netlify/functions/invitados  { invitados:[{nombre, pases}], reemplazar? }  -> guarda / actualiza
+//          reemplazar: true -> además elimina a quien no venga en la lista (sincroniza con el Excel)
 //   DELETE /.netlify/functions/invitados?c=codigo        -> elimina un invitado
 import { getStore } from "@netlify/blobs";
 import { createHash, timingSafeEqual } from "node:crypto";
@@ -43,9 +45,8 @@ export async function manejar(req, store, claveAdmin) {
     return json({ n: d.nombre, p: d.pases });
   }
 
-  // Todo lo demás es solo para el generador
-  if (!claveAdmin) return json({ error: "Falta configurar ADMIN_PASSWORD en Netlify" }, 500);
-  if (!claveCorrecta(req.headers.get("x-clave"), claveAdmin)) {
+  // Todo lo demás es para el panel. La contraseña es opcional.
+  if (claveAdmin && !claveCorrecta(req.headers.get("x-clave"), claveAdmin)) {
     await new Promise(r => setTimeout(r, 700));
     return json({ error: "Contraseña incorrecta" }, 401);
   }
@@ -75,14 +76,21 @@ export async function manejar(req, store, claveAdmin) {
         codigo,
         nombre,
         pases: limpiarPases(it.pases),
-        tel: String(it.tel || "").replace(/\D/g, "").slice(0, 20),
         creado: previo && previo.creado ? previo.creado : ahora,
         actualizado: ahora,
       };
       await store.setJSON(codigo, registro);
       resultado.push({ ...registro, estado: previo ? "actualizado" : "nuevo" });
     }
-    return json({ resultado });
+    const eliminados = [];
+    if (cuerpo.reemplazar === true) {
+      const enLista = new Set(resultado.filter(r => r.codigo).map(r => r.codigo));
+      const { blobs } = await store.list();
+      for (const b of blobs) {
+        if (!enLista.has(b.key)) { await store.delete(b.key); eliminados.push(b.key); }
+      }
+    }
+    return json({ resultado, eliminados });
   }
 
   if (req.method === "DELETE") {

@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Invitados · Boda E&MV</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root{--perla:#f5f3ee;--papel:#fbfaf7;--salvia:#9ba578;--salvia-claro:#b8bca5;--oliva:#636e3e;--oliva-osc:#3a3f2e;--tinta:#202020;--suave:#6f7264;--linea:#dcdccf;--alerta:#7a3b2e;--ok:#3d6b45}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--perla);color:var(--tinta);font-family:"Cormorant Garamond",Georgia,serif;font-size:17px;padding:24px 16px 60px;font-variant-numeric:lining-nums}
+  .wrap{max-width:1080px;margin:0 auto}
+  h1{font-size:34px;font-weight:700;color:var(--oliva-osc)}
+  h2{font-size:22px;font-weight:700;color:var(--oliva-osc);margin-bottom:10px}
+  p.sub{color:var(--suave);margin:4px 0 22px;font-size:19px}
+  .tarjeta{background:var(--papel);border:1px solid var(--linea);border-radius:14px;padding:20px;margin-bottom:18px}
+  label.tit{display:block;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--oliva);margin:14px 0 6px}
+  input[type=search],textarea{width:100%;font:inherit;padding:10px;border:1px solid var(--linea);border-radius:8px;background:#fff;color:var(--tinta)}
+  textarea{min-height:120px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
+  .ayuda{color:var(--suave);font-size:16px;margin-top:6px;line-height:1.5}
+  .ayuda code{font-family:ui-monospace,Menlo,monospace;font-size:13px;background:#eef0e6;padding:1px 5px;border-radius:4px}
+  .fila{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+  .check{display:flex;align-items:center;gap:8px;font-size:17px;color:var(--tinta)}
+  .check input{accent-color:var(--oliva);width:17px;height:17px}
+  button,.btn{font:inherit;font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:10px 18px;border:1.5px solid var(--oliva);border-radius:999px;background:transparent;color:var(--oliva);cursor:pointer;text-decoration:none;display:inline-block;white-space:nowrap}
+  button.lleno{background:var(--oliva);color:var(--perla)}
+  button:hover:not(:disabled),.btn:hover{background:var(--oliva-osc);border-color:var(--oliva-osc);color:#fff}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.peligro{border-color:var(--alerta);color:var(--alerta)}
+  button.peligro:hover:not(:disabled){background:var(--alerta);border-color:var(--alerta);color:#fff}
+  .zona-archivo{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:2px dashed var(--salvia-claro);border-radius:12px;padding:26px 16px;text-align:center;cursor:pointer;transition:background .2s,border-color .2s}
+  .zona-archivo:hover,.zona-archivo.encima{background:#f1f2ea;border-color:var(--oliva)}
+  .zona-archivo b{font-size:20px;color:var(--oliva-osc)}
+  .zona-archivo span{color:var(--suave);font-size:16px}
+  .zona-archivo input{display:none}
+  details{margin-top:12px}
+  summary{cursor:pointer;color:var(--oliva);font-weight:600}
+  .estado{margin-top:12px;font-size:17px;min-height:1.2em}
+  .estado.ok{color:var(--ok)} .estado.error{color:var(--alerta)}
+  .resumen{margin:0 0 12px;color:var(--suave);font-size:18px}
+  .tabla{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;min-width:760px}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--linea);vertical-align:middle}
+  th{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--oliva)}
+  td.link{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--suave);word-break:break-all}
+  td .btn,td button{padding:6px 12px;font-size:11px}
+  td.acciones{white-space:nowrap}
+  td.acciones > *{margin-right:6px}
+  .etiqueta{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px}
+  .etiqueta.nuevo{background:#e6eddc;color:var(--ok)}
+  .etiqueta.existe{background:#f3e9dc;color:#8a5a2b}
+  .etiqueta.borrar{background:#f3dfdb;color:var(--alerta)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Invitados de la boda</h1>
+  <p class="sub">Sube tu Excel y cada invitado queda registrado con su nombre y sus pases. Su link, por ejemplo <b>/carola_marcela_clarissa</b>, funciona al instante. Guarda esta página en tus marcadores: es privada.</p>
+
+  <!-- 1. Subir -->
+  <div class="tarjeta">
+    <h2>1 · Subir invitados</h2>
+    <label class="zona-archivo" id="zonaArchivo">
+      <input type="file" id="archivo" accept=".xlsx,.xls,.csv">
+      <b>Elegir archivo de Excel</b>
+      <span>o arrástralo aquí · .xlsx o .csv</span>
+      <span id="nombreArchivo"></span>
+    </label>
+    <div class="ayuda">
+      Columnas: <b>A · Nombre</b>, <b>B · Pases</b>, <b>C · Teléfono</b> (opcional, con código de país). Si la primera fila es de títulos, se ignora.<br>
+      El link se arma con las palabras del nombre: sin acentos, en minúsculas, unidas con <code>_</code>, sin comas ni "y".
+      <code>Carola, Marcela y Clarissa</code> → <code>/carola_marcela_clarissa</code>. El invitado verá el nombre tal cual lo escribas.
+    </div>
+    <details>
+      <summary>O pega las filas directamente</summary>
+      <textarea id="lista" spellcheck="false" placeholder="Cinthya Martínez&#9;2&#9;584141234567
+Carola, Marcela y Clarissa&#9;3"></textarea>
+      <div class="fila"><button id="revisarPegado" type="button">Revisar</button></div>
+    </details>
+    <div class="fila">
+      <label class="check"><input type="checkbox" id="reemplazar"> Este Excel es mi lista completa: eliminar a quien no esté en él</label>
+    </div>
+    <div class="tabla" id="tablaRevision" hidden style="margin-top:14px">
+      <table>
+        <thead><tr><th>#</th><th>Invitado</th><th>Pases</th><th>Link</th><th>Estado</th></tr></thead>
+        <tbody id="cuerpoRevision"></tbody>
+      </table>
+    </div>
+    <div class="fila">
+      <button class="lleno" id="guardar" type="button" disabled>Guardar en la invitación</button>
+    </div>
+    <div class="estado" id="estadoGuardar"></div>
+  </div>
+
+  <!-- 2. Guardados -->
+  <div class="tarjeta">
+    <h2>2 · Invitados guardados</h2>
+    <div class="resumen" id="resumen">Cargando…</div>
+    <div class="fila" style="margin-top:0;margin-bottom:6px">
+      <input type="search" id="buscar" placeholder="Buscar invitado…" style="max-width:320px">
+      <button id="recargar" type="button">Actualizar</button>
+      <button id="csv" type="button">Descargar Excel (CSV)</button>
+    </div>
+    <label class="tit" for="mensaje">Mensaje de WhatsApp</label>
+    <textarea id="mensaje" style="min-height:90px;font-family:inherit;font-size:16px">Hola {nombre} 💌 Con mucha ilusión les compartimos nuestra invitación de boda ({pases}). Ábranla aquí: {link}
+
+¡Esperamos contar con ustedes! Eduardo & María Virginia</textarea>
+    <div class="ayuda">Usa <code>{nombre}</code>, <code>{link}</code> y <code>{pases}</code>. Si el invitado vino con teléfono en el Excel, el botón WhatsApp abre su chat directo.</div>
+    <div class="tabla" style="margin-top:14px">
+      <table>
+        <thead><tr><th>#</th><th>Invitado</th><th>Pases</th><th>Link</th><th></th></tr></thead>
+        <tbody id="cuerpoGuardados"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "/.netlify/functions/invitados";
+const BASE = location.origin + "/";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let guardados = [];
+let revision = [];
+const telefonos = leerTelefonos();   // los teléfonos solo se guardan en este navegador
+
+/* Debe ser idéntico al de index.html y de la función */
+function normalizarCodigo(texto){
+  return String(texto || "")
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()
+    .split(/\s+/).filter(w => w && w !== "y" && w !== "e").join("_");
+}
+const pasesTexto = p => p === 1 ? "1 persona" : p + " personas";
+function estado(id, texto, tipo){ const e = $(id); e.textContent = texto; e.className = "estado" + (tipo ? " " + tipo : ""); }
+function leerTelefonos(){ try { return JSON.parse(localStorage.getItem("panel-telefonos") || "{}"); } catch(e){ return {}; } }
+function guardarTelefonos(){ try { localStorage.setItem("panel-telefonos", JSON.stringify(telefonos)); } catch(e){} }
+
+/* Contraseña opcional: solo se pide si algún día se configura ADMIN_PASSWORD en Netlify */
+function clave(){ try { return localStorage.getItem("panel-clave") || ""; } catch(e){ return ""; } }
+async function api(metodo, ruta = "", cuerpo, reintento = true){
+  const resp = await fetch(API + ruta, {
+    method: metodo,
+    headers: { ...(clave() ? { "x-clave": clave() } : {}), ...(cuerpo ? { "content-type": "application/json" } : {}) },
+    body: cuerpo ? JSON.stringify(cuerpo) : undefined,
+    cache: "no-store",
+  });
+  let datos = null; try { datos = await resp.json(); } catch(e) {}
+  if (resp.status === 401 && reintento) {
+    const c = prompt("Este panel ahora pide contraseña:");
+    if (c) { try { localStorage.setItem("panel-clave", c); } catch(e) {} return api(metodo, ruta, cuerpo, false); }
+  }
+  if (!resp.ok) throw new Error((datos && datos.error) || ("Error " + resp.status));
+  return datos;
+}
+
+/* ---------- Leer Excel / filas pegadas ---------- */
+function filasDesdeMatriz(matriz){
+  return matriz.map(f => ({
+    nombre: String(f[0] ?? "").trim().replace(/\s+/g, " "),
+    pasesTxt: String(f[1] ?? "").trim(),
+    tel: String(f[2] ?? "").replace(/\D/g, ""),
+  }))
+  .filter((f, i) => f.nombre && !(i === 0 && !/\d/.test(f.pasesTxt) && /nombre|invitad/i.test(f.nombre)))
+  .map(f => ({ nombre: f.nombre, pases: Math.max(1, Math.min(20, parseInt(f.pasesTxt, 10) || 1)), sinPases: !/\d/.test(f.pasesTxt), tel: f.tel }));
+}
+
+async function leerArchivo(file){
+  $("nombreArchivo").textContent = file.name;
+  try {
+    let matriz;
+    if (/\.csv$/i.test(file.name)) {
+      const texto = await file.text();
+      const sep = texto.includes(";") && !texto.includes("\t") ? ";" : (texto.includes("\t") ? "\t" : ",");
+      matriz = texto.split(/\r?\n/).map(l => l.split(sep).map(c => c.replace(/^"|"$/g, "")));
+    } else {
+      if (!window.XLSX) throw new Error("No cargó el lector de Excel. Revisa tu conexión o usa la opción de pegar.");
+      const libro = XLSX.read(await file.arrayBuffer(), { type: "array" });
+      matriz = XLSX.utils.sheet_to_json(libro.Sheets[libro.SheetNames[0]], { header: 1, raw: false, defval: "" });
+    }
+    revisar(filasDesdeMatriz(matriz));
+  } catch(e) { estado("estadoGuardar", "No pude leer el archivo: " + e.message, "error"); }
+}
+
+function revisar(filas){
+  const existentes = Object.fromEntries(guardados.map(g => [g.codigo, g]));
+  const vistos = {};
+  revision = filas.map(f => {
+    const codigo = normalizarCodigo(f.nombre);
+    let nota;
+    if (!codigo) nota = { clase: "existe", texto: "Sin letras válidas" };
+    else if (vistos[codigo]) nota = { clase: "existe", texto: "Repetido en el Excel" };
+    else if (existentes[codigo]) nota = existentes[codigo].pases === f.pases && existentes[codigo].nombre === f.nombre
+      ? { clase: "existe", texto: "Ya guardado, sin cambios" }
+      : { clase: "existe", texto: `Se actualiza (${existentes[codigo].pases} → ${f.pases} pases)` };
+    else nota = { clase: "nuevo", texto: f.sinPases ? "Nuevo · sin pases, se toma 1" : "Nuevo" };
+    const valido = !!codigo && !vistos[codigo];
+    if (codigo) vistos[codigo] = true;
+    return { ...f, codigo, nota, valido };
+  });
+  const aBorrar = $("reemplazar").checked ? guardados.filter(g => !vistos[g.codigo]) : [];
+  $("tablaRevision").hidden = !revision.length && !aBorrar.length;
+  $("cuerpoRevision").innerHTML = revision.map((f, i) => `<tr>
+      <td>${i + 1}</td><td>${esc(f.nombre)}</td><td>${f.pases}</td>
+      <td class="link">${f.codigo ? esc(BASE + f.codigo) : "—"}</td>
+      <td><span class="etiqueta ${f.nota.clase}">${esc(f.nota.texto)}</span></td></tr>`).join("")
+    + aBorrar.map(g => `<tr><td>—</td><td>${esc(g.nombre)}</td><td>${g.pases}</td><td class="link">${esc(BASE + g.codigo)}</td>
+      <td><span class="etiqueta borrar">Se elimina (no está en el Excel)</span></td></tr>`).join("");
+  const validos = revision.filter(f => f.valido).length;
+  $("guardar").disabled = !validos;
+  estado("estadoGuardar", revision.length
+    ? `${validos} invitado(s) listos para guardar${aBorrar.length ? ` · ${aBorrar.length} se eliminarán` : ""}. Revisa y pulsa "Guardar en la invitación".`
+    : "No encontré invitados en el archivo. La columna A debe tener los nombres.", revision.length ? "" : "error");
+}
+
+async function guardar(){
+  const lote = revision.filter(f => f.valido).map(({ nombre, pases, codigo }) => ({ nombre, pases, codigo }));
+  if (!lote.length) return;
+  const reemplazar = $("reemplazar").checked;
+  if (reemplazar && !confirm("Se eliminarán los invitados que no estén en este Excel. ¿Continuar?")) return;
+  $("guardar").disabled = true; estado("estadoGuardar", "Guardando…");
+  try {
+    const d = await api("POST", "", { invitados: lote, reemplazar });
+    revision.filter(f => f.valido && f.tel).forEach(f => telefonos[f.codigo] = f.tel);
+    guardarTelefonos();
+    const nuevos = d.resultado.filter(r => r.estado === "nuevo").length;
+    const act = d.resultado.filter(r => r.estado === "actualizado").length;
+    const del = (d.eliminados || []).length;
+    estado("estadoGuardar", `Listo: ${nuevos} nuevo(s), ${act} actualizado(s)${del ? `, ${del} eliminado(s)` : ""}. Sus links ya funcionan.`, "ok");
+    revision = []; $("tablaRevision").hidden = true; $("archivo").value = ""; $("lista").value = ""; $("nombreArchivo").textContent = "";
+    await cargarGuardados();
+  } catch(e) {
+    estado("estadoGuardar", "No se pudo guardar: " + e.message, "error");
+    $("guardar").disabled = false;
+  }
+}
+
+/* ---------- Invitados guardados ---------- */
+async function cargarGuardados(){
+  try {
+    const d = await api("GET");
+    guardados = d.invitados || [];
+    pintarGuardados();
+  } catch(e) { $("resumen").textContent = "No pude cargar la lista: " + e.message; }
+}
+
+function pintarGuardados(){
+  const filtro = normalizarCodigo($("buscar").value);
+  const lista = filtro ? guardados.filter(g => g.codigo.includes(filtro)) : guardados;
+  const total = guardados.reduce((s, g) => s + g.pases, 0);
+  $("resumen").innerHTML = guardados.length
+    ? `<b>${guardados.length}</b> invitaciones · <b>${total}</b> pases en total`
+    : "Todavía no hay invitados guardados.";
+  const tpl = $("mensaje").value;
+  $("cuerpoGuardados").innerHTML = lista.map((g, i) => {
+    const link = BASE + g.codigo;
+    const msg = encodeURIComponent(tpl.replace(/\{nombre\}/g, g.nombre).replace(/\{link\}/g, link).replace(/\{pases\}/g, pasesTexto(g.pases)));
+    return `<tr>
+      <td>${i + 1}</td><td>${esc(g.nombre)}</td><td>${g.pases}</td>
+      <td class="link">${esc(link)}</td>
+      <td class="acciones">
+        <button data-copiar="${esc(g.codigo)}">Copiar</button>
+        <a class="btn" href="https://wa.me/${esc(telefonos[g.codigo] || "")}?text=${msg}" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="btn" href="${esc(link)}" target="_blank" rel="noopener">Ver</a>
+        <button class="peligro" data-eliminar="${esc(g.codigo)}">Eliminar</button>
+      </td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="5" style="color:var(--suave)">${guardados.length ? "Sin resultados para esa búsqueda." : "Sube tu Excel en el paso 1."}</td></tr>`;
+}
+
+async function eliminar(codigo){
+  const g = guardados.find(x => x.codigo === codigo);
+  if (!g || !confirm(`¿Eliminar a "${g.nombre}"? Su link dejará de mostrar su nombre.`)) return;
+  try { await api("DELETE", "?c=" + encodeURIComponent(codigo)); await cargarGuardados(); }
+  catch(e) { alert("No se pudo eliminar: " + e.message); }
+}
+
+function descargarCSV(){
+  const q = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  const lineas = [["Invitado","Pases","Telefono","Link"].map(q).join(";")]
+    .concat(guardados.map(g => [g.nombre, g.pases, telefonos[g.codigo] || "", BASE + g.codigo].map(q).join(";")));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["﻿" + lineas.join("\r\n")], { type: "text/csv;charset=utf-8" }));
+  a.download = "invitados_boda.csv"; document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------- Eventos ---------- */
+$("archivo").addEventListener("change", e => { if (e.target.files[0]) leerArchivo(e.target.files[0]); });
+const zona = $("zonaArchivo");
+["dragenter","dragover"].forEach(ev => zona.addEventListener(ev, e => { e.preventDefault(); zona.classList.add("encima"); }));
+["dragleave","drop"].forEach(ev => zona.addEventListener(ev, e => { e.preventDefault(); zona.classList.remove("encima"); }));
+zona.addEventListener("drop", e => { const f = e.dataTransfer.files[0]; if (f) leerArchivo(f); });
+$("revisarPegado").addEventListener("click", () => {
+  const matriz = $("lista").value.split(/\r?\n/).map(l => l.includes("\t") ? l.split("\t") : l.split(";"));
+  revisar(filasDesdeMatriz(matriz));
+});
+$("reemplazar").addEventListener("change", () => { if (revision.length) revisar(revision); });
+$("guardar").addEventListener("click", guardar);
+$("recargar").addEventListener("click", cargarGuardados);
+$("buscar").addEventListener("input", pintarGuardados);
+$("mensaje").addEventListener("input", pintarGuardados);
+$("csv").addEventListener("click", descargarCSV);
+$("cuerpoGuardados").addEventListener("click", async e => {
+  const c = e.target.closest("[data-copiar]");
+  if (c) {
+    const link = BASE + c.dataset.copiar;
+    try { await navigator.clipboard.writeText(link); c.textContent = "¡Copiado!"; }
+    catch(_) { prompt("Copia el link:", link); }
+    setTimeout(() => c.textContent = "Copiar", 1500);
+    return;
+  }
+  const d = e.target.closest("[data-eliminar]");
+  if (d) eliminar(d.dataset.eliminar);
+});
+
+cargarGuardados();
+</script>
+</body>
+</html>
