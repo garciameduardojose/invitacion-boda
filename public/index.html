@@ -397,7 +397,6 @@
   <section id="lugares">
     <div class="revelar">
       <svg class="ramita" viewBox="0 0 120 24"><use href="#ramita"/></svg>
-      <div class="eyebrow">Dónde y cuándo</div>
       <h2>El gran día</h2>
       <div class="regla"></div>
     </div>
@@ -663,7 +662,6 @@ $("contLugares").innerHTML = BODA.lugares.map(l => {
   const link = l.linkMapa || ("https://www.google.com/maps/search/?api=1&query=" + q);
   return `
   <article class="lugar revelar">
-    <div class="tipo">${esc(l.tipo)}</div>
     <h3>${esc(l.titulo)}</h3>
     <div class="hora">${esc(l.hora)}</div>
     <div class="nombre-lugar">${esc(l.nombre)}</div>
