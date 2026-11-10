@@ -149,7 +149,7 @@
   .monograma{width:min(160px,44vw);margin:0 auto 16px}
   .bendicion{font-style:italic;font-size:20px;color:var(--oliva);line-height:1.4}
   .padres{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;max-width:340px;margin:12px auto 0;font-size:15px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--oliva-osc);line-height:1.5;text-align:center}
-  .padres .y{display:block;font-style:italic;font-weight:500;font-size:18px;letter-spacing:0;text-transform:none;color:var(--salvia);line-height:1.2}
+  .padres .y{display:block;font-style:italic;font-weight:500;font-size:18px;letter-spacing:0;text-transform:none;color:var(--salvia);line-height:.9;margin:0 0 -2px;transform:translateY(-3px)}
   .nombres{font-family:var(--script);font-weight:400;font-size:clamp(44px,11vw,70px);line-height:1.15;color:var(--oliva-osc);margin:14px 0 8px}
   .nombres .y{display:block;font-family:var(--serif);font-style:italic;font-size:.4em;color:var(--salvia);line-height:1.4}
   .fecha{display:inline-block;margin-top:24px;padding:12px 26px;border-top:1.5px solid var(--salvia-claro);border-bottom:1.5px solid var(--salvia-claro);text-transform:uppercase}
@@ -521,7 +521,7 @@ const BODA = {
   novio2: "María Virginia",
   // Dos columnas, una por pareja: { nombres: [papá, mamá], union: "&" o "y" }
   padres: [
-    { nombres: ["José", "Cinthya"], union: "&" },
+    { nombres: ["José", "Cinthya"], union: "y" },
     { nombres: ["Luis", "Mónica"], union: "y" }
   ],
   hashtag: "",                                   // ej. "#EduardoYMariaVirginia" (vacío = no se muestra)
