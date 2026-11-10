@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <base href="/">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Eduardo & María Virginia · 12.12.2026</title>
+<title>Eduardo José & María Virginia · 12.12.2026</title>
 <meta name="description" content="Invitación a la boda de Eduardo y María Virginia — sábado 12 de diciembre de 2026, Maracaibo.">
-<meta property="og:title" content="Eduardo & María Virginia · Nuestra boda">
+<meta property="og:title" content="Eduardo José & María Virginia · Nuestra boda">
 <meta property="og:description" content="Sábado 12 de diciembre de 2026 · Maracaibo. Abre tu invitación y confirma tu asistencia.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://boda-garciahernandez.netlify.app/">
@@ -148,9 +148,8 @@
   }
   .monograma{width:min(160px,44vw);margin:0 auto 16px}
   .bendicion{font-style:italic;font-size:20px;color:var(--oliva);line-height:1.4}
-  .padres{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;max-width:320px;margin:10px auto 0;font-size:15px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--oliva-osc);line-height:1.8}
-  .padres div:nth-child(odd){text-align:right}
-  .padres div:nth-child(even){text-align:left}
+  .padres{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;max-width:340px;margin:12px auto 0;font-size:15px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--oliva-osc);line-height:1.5;text-align:center}
+  .padres .y{display:block;font-style:italic;font-weight:500;font-size:18px;letter-spacing:0;text-transform:none;color:var(--salvia);line-height:1.2}
   .nombres{font-family:var(--script);font-weight:400;font-size:clamp(44px,11vw,70px);line-height:1.15;color:var(--oliva-osc);margin:14px 0 8px}
   .nombres .y{display:block;font-family:var(--serif);font-style:italic;font-size:.4em;color:var(--salvia);line-height:1.4}
   .fecha{display:inline-block;margin-top:24px;padding:12px 26px;border-top:1.5px solid var(--salvia-claro);border-bottom:1.5px solid var(--salvia-claro);text-transform:uppercase}
@@ -482,7 +481,7 @@
         <div class="vestimenta" id="codigoVestimenta"></div>
         <p class="texto" id="detalleVestimenta"></p>
         <div class="cortejo">
-          <div class="cortejo-titulo">Color de la boda</div>
+          <div class="cortejo-titulo">Colores reservados</div>
           <div class="muestras" id="muestrasCortejo" aria-label="Gama de verde salvia de la boda"></div>
           <p class="cortejo-aviso" id="avisoCortejo"></p>
         </div>
@@ -518,10 +517,10 @@
    CONFIGURACIÓN — edita aquí los datos de la boda
    ===================================================================== */
 const BODA = {
-  novio1: "Eduardo",
+  novio1: "Eduardo José",
   novio2: "María Virginia",
-  // Se muestran en dos columnas: [izquierda, derecha] por fila
-  padres: [["José", "Luis"], ["Cinthya", "Mónica"]],
+  // Dos columnas, una por pareja: [papá, mamá] → "José & Cinthya" | "Luis & Mónica"
+  padres: [["José", "Cinthya"], ["Luis", "Mónica"]],
   hashtag: "",                                   // ej. "#EduardoYMariaVirginia" (vacío = no se muestra)
 
   // Hora de inicio de la ceremonia y cierre estimado (hora de Venezuela, UTC-4)
@@ -562,13 +561,13 @@ const BODA = {
 
   vestimenta: {
     codigo: "Etiqueta formal",
-    detalle: "Caballeros: traje oscuro y corbata · Damas: vestido largo",
+    detalle: "",
     cortejoColores: ["#c9cfb4", "#b3bc98", "#9ba578", "#7d8858"],
     cortejoAviso: "(Estos colores solo serán utilizados por las damas de honor y el cortejo)"
   },
 
   regalos: {
-    texto: "Tu presencia es nuestro mayor regalo. Si además deseas tener un detalle con nosotros, puedes hacerlo a través de:",
+    texto: "Si deseas tener un detalle con nosotros, puedes hacerlo a través de:",
     // Cada método se muestra como una tarjeta con botón de copiar en cada dato.
     // Para agregar otro método (ej. Zelle): { metodo: "Zelle", datos: [{ etiqueta: "Correo", valor: "..." }, { etiqueta: "Titular", valor: "..." }] }
     metodos: [
@@ -680,9 +679,10 @@ $("contItinerario").innerHTML = BODA.itinerario.map(h => `
 
 $("codigoVestimenta").textContent = BODA.vestimenta.codigo;
 $("detalleVestimenta").textContent = BODA.vestimenta.detalle;
+$("detalleVestimenta").hidden = !BODA.vestimenta.detalle;
 $("muestrasCortejo").innerHTML = BODA.vestimenta.cortejoColores.map(c => `<i style="background:${esc(c)}"></i>`).join("");
 $("avisoCortejo").textContent = BODA.vestimenta.cortejoAviso;
-$("padres").innerHTML = BODA.padres.map(f => f.map(n => `<div>${esc(n)}</div>`).join("")).join("");
+$("padres").innerHTML = BODA.padres.map(p => `<div>${p.map(esc).join('<span class="y">&amp;</span>')}</div>`).join("");
 
 /* ---------- Regalos ---------- */
 $("textoRegalos").textContent = BODA.regalos.texto;
