@@ -519,8 +519,11 @@
 const BODA = {
   novio1: "Eduardo José",
   novio2: "María Virginia",
-  // Dos columnas, una por pareja: [papá, mamá] → "José & Cinthya" | "Luis & Mónica"
-  padres: [["José", "Cinthya"], ["Luis", "Mónica"]],
+  // Dos columnas, una por pareja: { nombres: [papá, mamá], union: "&" o "y" }
+  padres: [
+    { nombres: ["José", "Cinthya"], union: "&" },
+    { nombres: ["Luis", "Mónica"], union: "y" }
+  ],
   hashtag: "",                                   // ej. "#EduardoYMariaVirginia" (vacío = no se muestra)
 
   // Hora de inicio de la ceremonia y cierre estimado (hora de Venezuela, UTC-4)
@@ -682,7 +685,7 @@ $("detalleVestimenta").textContent = BODA.vestimenta.detalle;
 $("detalleVestimenta").hidden = !BODA.vestimenta.detalle;
 $("muestrasCortejo").innerHTML = BODA.vestimenta.cortejoColores.map(c => `<i style="background:${esc(c)}"></i>`).join("");
 $("avisoCortejo").textContent = BODA.vestimenta.cortejoAviso;
-$("padres").innerHTML = BODA.padres.map(p => `<div>${p.map(esc).join('<span class="y">&amp;</span>')}</div>`).join("");
+$("padres").innerHTML = BODA.padres.map(p => `<div>${p.nombres.map(esc).join(`<span class="y">${esc(p.union || "&")}</span>`)}</div>`).join("");
 
 /* ---------- Regalos ---------- */
 $("textoRegalos").textContent = BODA.regalos.texto;
