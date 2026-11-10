@@ -148,8 +148,9 @@
   }
   .monograma{width:min(160px,44vw);margin:0 auto 16px}
   .bendicion{font-style:italic;font-size:20px;color:var(--oliva);line-height:1.4}
-  .padres{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;max-width:340px;margin:12px auto 0;font-size:15px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--oliva-osc);line-height:1.5;text-align:center}
-  .padres .y{display:block;font-style:italic;font-weight:500;font-size:18px;letter-spacing:0;text-transform:none;color:var(--salvia);line-height:.9;margin:0 0 -2px;transform:translateY(-3px)}
+  .padres{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px;max-width:440px;margin:12px auto 0;font-size:clamp(10.5px,2.9vw,15px);font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--oliva-osc);line-height:1.7;text-align:center}
+  .padres span{display:block}
+  @media (min-width:600px){.padres{letter-spacing:.12em;gap:0 24px}}
   .nombres{font-family:var(--script);font-weight:400;font-size:clamp(44px,11vw,70px);line-height:1.15;color:var(--oliva-osc);margin:14px 0 8px}
   .nombres .y{display:block;font-family:var(--serif);font-style:italic;font-size:.4em;color:var(--salvia);line-height:1.4}
   .fecha{display:inline-block;margin-top:24px;padding:12px 26px;border-top:1.5px solid var(--salvia-claro);border-bottom:1.5px solid var(--salvia-claro);text-transform:uppercase}
@@ -519,10 +520,10 @@
 const BODA = {
   novio1: "Eduardo José",
   novio2: "María Virginia",
-  // Dos columnas, una por pareja: { nombres: [papá, mamá], union: "&" o "y" }
+  // Dos columnas, una por pareja: [papá, mamá]
   padres: [
-    { nombres: ["José", "Cinthya"], union: "y" },
-    { nombres: ["Luis", "Mónica"], union: "y" }
+    ["José García", "Cinthya Martínez"],
+    ["Luis Hernández", "Mónica Márquez"]
   ],
   hashtag: "",                                   // ej. "#EduardoYMariaVirginia" (vacío = no se muestra)
 
@@ -685,7 +686,7 @@ $("detalleVestimenta").textContent = BODA.vestimenta.detalle;
 $("detalleVestimenta").hidden = !BODA.vestimenta.detalle;
 $("muestrasCortejo").innerHTML = BODA.vestimenta.cortejoColores.map(c => `<i style="background:${esc(c)}"></i>`).join("");
 $("avisoCortejo").textContent = BODA.vestimenta.cortejoAviso;
-$("padres").innerHTML = BODA.padres.map(p => `<div>${p.nombres.map(esc).join(`<span class="y">${esc(p.union || "&")}</span>`)}</div>`).join("");
+$("padres").innerHTML = BODA.padres.map(p => `<div>${p.map(n => `<span>${esc(n)}</span>`).join("")}</div>`).join("");
 
 /* ---------- Regalos ---------- */
 $("textoRegalos").textContent = BODA.regalos.texto;
