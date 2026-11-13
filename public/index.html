@@ -250,8 +250,9 @@
 
   /* ---------- PIE ---------- */
   footer{text-align:center;padding:40px 16px 100px}
-  footer .monograma{width:110px;margin-bottom:12px;opacity:.9}
   footer .nombres{font-size:clamp(40px,10vw,56px)}
+  footer .nombres span{display:block}
+  footer .nombres .y{font-family:var(--serif);font-style:italic;font-size:.5em;color:var(--salvia);line-height:1.3}
   footer p{font-size:14px;font-weight:600;letter-spacing:.32em;text-transform:uppercase;color:var(--texto-suave)}
 
   /* ---------- MENÚ SUPERIOR ---------- */
@@ -506,7 +507,6 @@
 </main>
 
 <footer>
-  <img class="monograma" src="monograma.png" alt="">
   <div class="nombres" id="pieNombres"></div>
   <p>12-12-2026</p>
   <p id="hashtag" style="margin-top:10px"></p>
@@ -650,7 +650,7 @@ const invitado = await resolverInvitado();
 /* ---------- Pintar contenido ---------- */
 $("novio1").textContent = BODA.novio1;
 $("novio2").textContent = BODA.novio2;
-$("pieNombres").innerHTML = esc(BODA.novio1) + ' <span style="font-family:var(--serif);font-style:italic;font-size:.5em;color:var(--salvia)">&amp;</span> ' + esc(BODA.novio2);
+$("pieNombres").innerHTML = `<span>${esc(BODA.novio1)}</span><span class="y">&amp;</span><span>${esc(BODA.novio2)}</span>`;
 if (BODA.hashtag) $("hashtag").textContent = BODA.hashtag;
 
 if (invitado) {
