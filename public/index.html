@@ -70,7 +70,7 @@
     transition:opacity 1s ease, visibility 1s ease;
     padding:16px;
   }
-  #portada.oculta{opacity:0;visibility:hidden}
+  #portada.oculta{opacity:0;visibility:hidden;pointer-events:none}
   .portada-para{font-size:14px;font-weight:600;letter-spacing:.32em;text-transform:uppercase;color:var(--oliva);text-align:center}
   .portada-nombre{font-family:var(--script);font-size:44px;color:var(--oliva-osc);text-align:center;line-height:1.2;margin-top:8px}
   .sobre{
@@ -335,7 +335,7 @@
 </div>
 
 <button id="musica" class="oculto" aria-label="Pausar o reproducir música">♪</button>
-<audio id="audio" src="musica.mp3" loop preload="none"></audio>
+<audio id="audio" src="musica.mp3" loop preload="auto" playsinline></audio>
 
 <nav class="menu" id="menu" aria-label="Secciones de la invitación">
   <div class="menu-barra">
@@ -716,17 +716,38 @@ if (metodos.length) {
 
 $("fechaLimite").textContent = BODA.rsvp.fechaLimite;
 
-/* ---------- Sobre de entrada + música ---------- */
+/* ---------- Sobre de entrada + música ----------
+   La música intenta sonar apenas carga la página. Si el navegador lo bloquea
+   (la mayoría de celulares exige un toque primero), arranca con el primer toque
+   o tecla, normalmente al tocar el sello. Si el invitado la pausa, no se reanuda sola. */
 const audio = $("audio");
-audio.addEventListener("canplay", () => { $("musica").classList.remove("oculto"); }, { once:true });
-audio.addEventListener("error", () => { $("musica").classList.add("oculto"); });
+const btnMusica = $("musica");
+let pausadaPorInvitado = false;
+audio.volume = 0.7;
+const mostrarBoton = () => btnMusica.classList.remove("oculto");
+if (audio.readyState >= 2) mostrarBoton();   // ya cargó antes de que corriera este código
+audio.addEventListener("canplay", mostrarBoton, { once:true });
+audio.addEventListener("error", () => btnMusica.classList.add("oculto"));
+audio.addEventListener("play", () => { mostrarBoton(); btnMusica.classList.add("sonando"); });
+audio.addEventListener("pause", () => btnMusica.classList.remove("sonando"));
+
+function intentarMusica(){
+  if (pausadaPorInvitado || !audio.paused) return;
+  audio.play().catch(() => {});
+}
+intentarMusica();
+["pointerdown","touchstart","keydown"].forEach(ev =>
+  document.addEventListener(ev, function primerGesto(){
+    intentarMusica();
+    if (!audio.paused) ["pointerdown","touchstart","keydown"].forEach(x => document.removeEventListener(x, primerGesto, true));
+  }, { capture: true, passive: true })
+);
 
 function abrirSobre(){
   const sobre = $("sobre");
   if (sobre.classList.contains("abierto")) return;
   sobre.classList.add("abierto");
-  audio.load();
-  audio.play().then(() => { $("musica").classList.remove("oculto"); $("musica").classList.add("sonando"); }).catch(() => {});
+  intentarMusica();
   setTimeout(() => {
     $("portada").classList.add("oculta");
     document.body.classList.remove("bloqueado");
@@ -736,9 +757,10 @@ function abrirSobre(){
 $("sobre").addEventListener("click", abrirSobre);
 $("sobre").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrirSobre(); } });
 
-$("musica").addEventListener("click", () => {
-  if (audio.paused) { audio.play().catch(() => {}); $("musica").classList.add("sonando"); }
-  else { audio.pause(); $("musica").classList.remove("sonando"); }
+btnMusica.addEventListener("click", e => {
+  e.stopPropagation();
+  if (audio.paused) { pausadaPorInvitado = false; audio.play().catch(() => {}); }
+  else { pausadaPorInvitado = true; audio.pause(); }
 });
 
 /* ---------- Aparición al hacer scroll ---------- */
