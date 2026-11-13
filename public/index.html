@@ -360,7 +360,7 @@
       <img class="monograma" src="monograma.png" alt="Monograma E M">
       <div class="bendicion">Con la bendición de Dios y de nuestros padres</div>
       <div class="padres" id="padres"></div>
-      <h1 class="nombres"><span id="novio1"></span><span class="y">y</span><span id="novio2"></span></h1>
+      <h1 class="nombres"><span id="novio1"></span><span class="y">&amp;</span><span id="novio2"></span></h1>
       <p class="texto">tenemos el honor de invitarle a celebrar el sacramento de nuestro matrimonio</p>
       <div class="fecha">
         <div class="fecha-dia">Sábado</div>
@@ -535,7 +535,7 @@ const BODA = {
       tipo: "Ceremonia religiosa",
       titulo: "Ceremonia",
       hora: "8:00 p. m.",
-      nombre: "Capilla del Hogar Clínica San Rafael",
+      nombre: "Capilla Hogar Clínica San Rafael",
       direccion: "Calle 64 con Av. 3F, Maracaibo, Zulia",
       mapaEmbed: "Hogar Clínica San Rafael, Calle 64 con Av. 3F, Maracaibo, Zulia, Venezuela",
       linkMapa: "https://share.google/4KOBMh9coFPY5QKx2",
@@ -558,7 +558,7 @@ const BODA = {
 
   // Agrega aquí más momentos de la noche cuando tengas las horas (primer baile, cena, etc.)
   itinerario: [
-    { hora: "8:00 pm", titulo: "Ceremonia religiosa", detalle: "Capilla del Hogar Clínica San Rafael" },
+    { hora: "8:00 pm", titulo: "Ceremonia religiosa", detalle: "Capilla Hogar Clínica San Rafael" },
     { hora: "9:00 pm", titulo: "Recepción",           detalle: "Regine's" }
   ],
 
@@ -579,7 +579,13 @@ const BODA = {
         datos: [
           { etiqueta: "Routing Number", valor: "063104668" },
           { etiqueta: "Account Number", valor: "0382878080" },
-          { etiqueta: "Titular",        valor: "Eduardo Garcia Martinez" }
+          { etiqueta: "Titular",        valor: "Masia Foods" }
+        ]
+      },
+      {
+        metodo: "Zelle",
+        datos: [
+          { etiqueta: "Correo", valor: "bodaegmh@gmail.com" }
         ]
       }
     ]
@@ -644,7 +650,7 @@ const invitado = await resolverInvitado();
 /* ---------- Pintar contenido ---------- */
 $("novio1").textContent = BODA.novio1;
 $("novio2").textContent = BODA.novio2;
-$("pieNombres").innerHTML = esc(BODA.novio1) + ' <span style="font-family:var(--serif);font-style:italic;font-size:.5em;color:var(--salvia)">y</span> ' + esc(BODA.novio2);
+$("pieNombres").innerHTML = esc(BODA.novio1) + ' <span style="font-family:var(--serif);font-style:italic;font-size:.5em;color:var(--salvia)">&amp;</span> ' + esc(BODA.novio2);
 if (BODA.hashtag) $("hashtag").textContent = BODA.hashtag;
 
 if (invitado) {
