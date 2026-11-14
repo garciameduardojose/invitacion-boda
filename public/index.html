@@ -62,12 +62,12 @@
   img{max-width:100%;display:block}
 
   /* ---------- PORTADA (hoja con cinta que se abre en dos puertas) ---------- */
-  #portada{position:fixed;inset:0;z-index:100;perspective:1400px;cursor:pointer;overflow:hidden;
+  #portada{position:fixed;inset:0;z-index:100;cursor:pointer;overflow:hidden;touch-action:none;
     transition:opacity .35s ease, visibility .35s ease;-webkit-tap-highlight-color:transparent}
   #portada.oculta{opacity:0;visibility:hidden;pointer-events:none}
-  .pt-puerta{position:absolute;top:0;bottom:0;overflow:hidden;will-change:transform;
-    transition:transform 1.05s cubic-bezier(.45,.05,.2,1) .12s}
-  .pt-puerta::after{content:"";position:absolute;top:0;bottom:0;width:28px;opacity:0;transition:opacity .4s ease .12s;pointer-events:none}
+  .pt-puerta{position:absolute;top:0;bottom:0;overflow:hidden;will-change:transform;transform:translate3d(0,0,0);
+    transition:transform 1s cubic-bezier(.55,.1,.25,1)}
+  .pt-puerta::after{content:"";position:absolute;top:0;bottom:0;width:28px;opacity:0;transition:opacity .3s ease;pointer-events:none}
   .pt-izq::after{right:0;background:linear-gradient(90deg,rgba(40,45,25,0),rgba(40,45,25,.18))}
   .pt-der::after{left:0;background:linear-gradient(270deg,rgba(40,45,25,0),rgba(40,45,25,.18))}
   #portada.abierto .pt-puerta::after{opacity:1}
@@ -77,8 +77,8 @@
     background:linear-gradient(180deg,#f7f4ed,#efebe1)}
   .pt-izq .pt-lamina{left:0}
   .pt-der .pt-lamina{right:0}
-  #portada.abierto .pt-izq{transform:translateX(-102%) rotateY(28deg)}
-  #portada.abierto .pt-der{transform:translateX(102%) rotateY(-28deg)}
+  #portada.abierto .pt-izq{transform:translate3d(-104%,0,0)}
+  #portada.abierto .pt-der{transform:translate3d(104%,0,0)}
   .pt-marco{position:absolute;inset:18px;border:1px solid var(--salvia-claro)}
   .pt-marco2{position:absolute;inset:26px;border:1px solid rgba(184,188,165,.6)}
   .pt-rama{position:absolute;width:clamp(78px,22vw,110px);opacity:.9}
@@ -111,7 +111,7 @@
   #portada.abierto .pt-sello{animation:none;opacity:0;transform:translate(-50%,-50%) scale(1.35)}
   #portada.abierto .pt-hint{animation:none;opacity:0}
   @media (max-height:640px){.pt-arriba{top:4%}.pt-abajo{top:calc(59% + 76px)}.pt-hint{bottom:44px}}
-  @media (prefers-reduced-motion:reduce){.pt-puerta{transition-duration:.5s}}
+
 
   /* ---------- ESTRUCTURA ---------- */
   main{max-width:780px;margin:0 auto;padding:0 16px}
@@ -288,6 +288,11 @@
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{animation:none!important;transition:none!important}
     .revelar{opacity:1;transform:none}
+    /* La apertura de la portada se mantiene aunque el teléfono tenga "Reducir movimiento" */
+    #portada{transition:opacity .35s ease, visibility .35s ease!important}
+    #portada .pt-puerta{transition:transform 1s cubic-bezier(.55,.1,.25,1)!important}
+    #portada .pt-sello{transition:opacity .3s ease, transform .3s ease!important}
+    #portada .pt-puerta::after{transition:opacity .3s ease!important}
   }
 </style>
 </head>
@@ -738,11 +743,12 @@ const audio = $("audio");
 const btnMusica = $("musica");
 let pausadaPorInvitado = false;
 audio.volume = 0.7;
-const mostrarBoton = () => btnMusica.classList.remove("oculto");
+let portadaCerrada = true;   // el botón ♪ aparece después de abrir: cambiar la pantalla durante el toque hace que el iPhone pida un segundo toque
+const mostrarBoton = () => { if (!portadaCerrada) btnMusica.classList.remove("oculto"); };
 if (audio.readyState >= 2) mostrarBoton();   // ya cargó antes de que corriera este código
 audio.addEventListener("canplay", mostrarBoton, { once:true });
 audio.addEventListener("error", () => btnMusica.classList.add("oculto"));
-audio.addEventListener("play", () => { mostrarBoton(); btnMusica.classList.add("sonando"); });
+audio.addEventListener("play", () => { btnMusica.classList.add("sonando"); mostrarBoton(); });
 audio.addEventListener("pause", () => btnMusica.classList.remove("sonando"));
 
 function intentarMusica(){
@@ -750,21 +756,25 @@ function intentarMusica(){
   audio.play().catch(() => {});
 }
 intentarMusica();
-["pointerdown","touchstart","keydown"].forEach(ev =>
-  document.addEventListener(ev, function primerGesto(){
-    intentarMusica();
-    if (!audio.paused) ["pointerdown","touchstart","keydown"].forEach(x => document.removeEventListener(x, primerGesto, true));
-  }, { capture: true, passive: true })
-);
+/* iPhone solo deja sonar audio al soltar el dedo (touchend / pointerup / click), no al apoyarlo */
+const GESTOS = ["touchend","pointerup","click","keydown","pointerdown"];
+function primerGesto(){ intentarMusica(); if (!audio.paused) GESTOS.forEach(x => document.removeEventListener(x, primerGesto, true)); }
+GESTOS.forEach(ev => document.addEventListener(ev, primerGesto, { capture: true, passive: true }));
 
 function abrirSobre(){
   const portada = $("portada");
   if (portada.classList.contains("abierto")) return;
-  portada.classList.add("abierto");
-  intentarMusica();
-  setTimeout(() => { document.body.classList.remove("bloqueado"); revisarRevelar(); }, 900);
-  setTimeout(() => portada.classList.add("oculta"), 1100);
+  portada.classList.add("abierto");          // la animación arranca en el mismo instante del toque
+  setTimeout(() => { document.body.classList.remove("bloqueado"); revisarRevelar(); }, 850);
+  setTimeout(() => {
+    portada.classList.add("oculta");
+    portadaCerrada = false;
+    if (audio.readyState >= 2 || !audio.paused) mostrarBoton();
+  }, 1050);
 }
+/* Abrir al apoyar el dedo (sin esperar al "click", que el iPhone a veces cancela) */
+$("portada").addEventListener("pointerdown", abrirSobre);
+$("portada").addEventListener("touchstart", abrirSobre, { passive: true });
 $("portada").addEventListener("click", abrirSobre);
 $("portada").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); abrirSobre(); } });
 
