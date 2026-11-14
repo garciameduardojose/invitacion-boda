@@ -43,7 +43,7 @@
   .estado.ok{color:var(--ok)} .estado.error{color:var(--alerta)}
   .resumen{margin:0 0 12px;color:var(--suave);font-size:18px}
   .tabla{overflow-x:auto}
-  table{width:100%;border-collapse:collapse;min-width:760px}
+  table{width:100%;border-collapse:collapse;min-width:820px}
   th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--linea);vertical-align:middle}
   th{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--oliva)}
   td.link{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--suave);word-break:break-all}
@@ -54,12 +54,20 @@
   .etiqueta.nuevo{background:#e6eddc;color:var(--ok)}
   .etiqueta.existe{background:#f3e9dc;color:#8a5a2b}
   .etiqueta.borrar{background:#f3dfdb;color:var(--alerta)}
+  td.tel{white-space:nowrap;font-variant-numeric:tabular-nums}
+  .etiqueta.revisar{background:#f3e9dc;color:#8a5a2b}
+  .cifras{display:flex;gap:12px;flex-wrap:wrap;margin:4px 0 14px}
+  .cifra{flex:1 1 140px;background:#fff;border:1px solid var(--linea);border-radius:12px;padding:12px 14px}
+  .cifra b{display:block;font-size:30px;color:var(--oliva-osc);line-height:1.1}
+  .cifra span{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--suave)}
+  .si{color:var(--ok);font-weight:700} .no{color:var(--alerta);font-weight:700}
+  td.msg{max-width:260px;color:var(--suave);font-size:15px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Invitados de la boda</h1>
-  <p class="sub">Sube tu Excel y cada invitado queda registrado con su nombre y sus pases. Su link, por ejemplo <b>/carola_marcela_clarissa</b>, funciona al instante. Guarda esta página en tus marcadores: es privada.</p>
+  <p class="sub">Sube el Excel y cada invitado queda registrado con su nombre, sus pases y su teléfono. Desde aquí se envían los mensajes y se descargan las confirmaciones. Guarda esta página en tus marcadores: es privada.</p>
 
   <!-- 1. Subir -->
   <div class="tarjeta">
@@ -71,22 +79,22 @@
       <span id="nombreArchivo"></span>
     </label>
     <div class="ayuda">
-      Columnas: <b>A · Nombre</b>, <b>B · Pases</b>, <b>C · Teléfono</b> (opcional, con código de país). Si la primera fila es de títulos, se ignora.<br>
-      El link se arma con las palabras del nombre: sin acentos, en minúsculas, unidas con <code>_</code>, sin comas ni "y".
-      <code>Carola, Marcela y Clarissa</code> → <code>/carola_marcela_clarissa</code>. El invitado verá el nombre tal cual lo escribas.
+      Columnas: <b>A · Nombre</b>, <b>B · Pases</b>, <b>C · Teléfono</b>. Si la primera fila es de títulos, se ignora.<br>
+      El teléfono se arregla solo: <code>0412-123.45.67</code>, <code>412 1234567</code> o <code>+58 412 1234567</code> quedan como <code>584121234567</code>. Los números de otros países deben llevar su código (ej. <code>+1 305…</code>).<br>
+      El link se arma con el nombre: <code>Carola, Marcela y Clarissa</code> → <code>/carola_marcela_clarissa</code>.
     </div>
     <details>
       <summary>O pega las filas directamente</summary>
-      <textarea id="lista" spellcheck="false" placeholder="Cinthya Martínez&#9;2&#9;584141234567
+      <textarea id="lista" spellcheck="false" placeholder="Cinthya Martínez&#9;2&#9;0414-1234567
 Carola, Marcela y Clarissa&#9;3"></textarea>
       <div class="fila"><button id="revisarPegado" type="button">Revisar</button></div>
     </details>
     <div class="fila">
-      <label class="check"><input type="checkbox" id="reemplazar"> Este Excel es mi lista completa: eliminar a quien no esté en él</label>
+      <label class="check"><input type="checkbox" id="reemplazar"> Este Excel es la lista completa: eliminar a quien no esté en él</label>
     </div>
     <div class="tabla" id="tablaRevision" hidden style="margin-top:14px">
       <table>
-        <thead><tr><th>#</th><th>Invitado</th><th>Pases</th><th>Link</th><th>Estado</th></tr></thead>
+        <thead><tr><th>#</th><th>Invitado</th><th>Pases</th><th>Teléfono</th><th>Link</th><th>Estado</th></tr></thead>
         <tbody id="cuerpoRevision"></tbody>
       </table>
     </div>
@@ -96,14 +104,14 @@ Carola, Marcela y Clarissa&#9;3"></textarea>
     <div class="estado" id="estadoGuardar"></div>
   </div>
 
-  <!-- 2. Guardados -->
+  <!-- 2. Guardados y mensajes -->
   <div class="tarjeta">
-    <h2>2 · Invitados guardados</h2>
+    <h2>2 · Invitados y mensajes de WhatsApp</h2>
     <div class="resumen" id="resumen">Cargando…</div>
     <div class="fila" style="margin-top:0;margin-bottom:6px">
       <input type="search" id="buscar" placeholder="Buscar invitado…" style="max-width:320px">
       <button id="recargar" type="button">Actualizar</button>
-      <button id="csv" type="button">Descargar Excel (CSV)</button>
+      <button class="lleno" id="xlsMensajes" type="button">Descargar Excel de mensajes</button>
     </div>
     <label class="tit" for="mensaje">Mensaje de WhatsApp</label>
     <textarea id="mensaje" style="min-height:140px;font-family:inherit;font-size:16px">Hola {nombre} 💚
@@ -111,11 +119,28 @@ En nombre de Eduardo José y María Virginia, es un placer compartirles la invit
 {link}
 Pueden confirmar su asistencia directamente en la página web o respondiendo a este mensaje.
 Con cariño, de parte de los novios.</textarea>
-    <div class="ayuda">Usa <code>{nombre}</code>, <code>{link}</code> y <code>{pases}</code>. Si el invitado vino con teléfono en el Excel, el botón WhatsApp abre su chat directo.</div>
+    <div class="ayuda">Usa <code>{nombre}</code>, <code>{link}</code> y <code>{pases}</code>. <b>WhatsApp</b> abre el chat del invitado con el mensaje ya escrito; <b>Copiar mensaje</b> lo copia para pegarlo donde quieras. El Excel de mensajes trae lo mismo, con un enlace "Abrir chat" por invitado.</div>
     <div class="tabla" style="margin-top:14px">
       <table>
-        <thead><tr><th>#</th><th>Invitado</th><th>Pases</th><th>Link</th><th></th></tr></thead>
+        <thead><tr><th>#</th><th>Invitado</th><th>Pases</th><th>Teléfono</th><th>Respuesta</th><th></th></tr></thead>
         <tbody id="cuerpoGuardados"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 3. Confirmaciones -->
+  <div class="tarjeta">
+    <h2>3 · Confirmaciones recibidas</h2>
+    <div class="cifras" id="cifras"></div>
+    <div class="fila" style="margin-top:0;margin-bottom:6px">
+      <button id="recargarResp" type="button">Actualizar</button>
+      <button class="lleno" id="xlsResp" type="button">Descargar Excel de confirmaciones</button>
+    </div>
+    <div class="ayuda">El Excel trae dos hojas: <b>Confirmaciones</b> (cada respuesta, en orden de llegada) y <b>Por invitación</b> (cada invitado con su respuesta más reciente o "Pendiente").</div>
+    <div class="tabla" style="margin-top:14px">
+      <table>
+        <thead><tr><th>Fecha</th><th>Invitación</th><th>Nombre</th><th>Respuesta</th><th>Asisten</th><th>Restricciones</th><th>Mensaje</th><th></th></tr></thead>
+        <tbody id="cuerpoResp"></tbody>
       </table>
     </div>
   </div>
@@ -123,12 +148,15 @@ Con cariño, de parte de los novios.</textarea>
 
 <script>
 const API = "/.netlify/functions/invitados";
+const API_RESP = "/.netlify/functions/respuestas";
+const PANEL = "odzjhdfq";
 const BASE = location.origin + "/";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let guardados = [];
 let revision = [];
-const telefonos = leerTelefonos();   // los teléfonos solo se guardan en este navegador
+let respuestas = [];
+const telLocal = leerTelLocal();   // teléfonos que versiones anteriores del panel guardaban solo en este navegador
 
 /* Debe ser idéntico al de index.html y de la función */
 function normalizarCodigo(texto){
@@ -139,22 +167,43 @@ function normalizarCodigo(texto){
 }
 const pasesTexto = p => p === 1 ? "1 persona" : p + " personas";
 function estado(id, texto, tipo){ const e = $(id); e.textContent = texto; e.className = "estado" + (tipo ? " " + tipo : ""); }
-function leerTelefonos(){ try { return JSON.parse(localStorage.getItem("panel-telefonos") || "{}"); } catch(e){ return {}; } }
-function guardarTelefonos(){ try { localStorage.setItem("panel-telefonos", JSON.stringify(telefonos)); } catch(e){} }
+function leerTelLocal(){ try { return JSON.parse(localStorage.getItem("panel-telefonos") || "{}"); } catch(e){ return {}; } }
+const telDe = g => g.tel || telLocal[g.codigo] || "";
 
-/* Contraseña opcional: solo se pide si algún día se configura ADMIN_PASSWORD en Netlify */
+/* ---------- Teléfonos: se dejan en formato internacional para WhatsApp ---------- */
+function formatearTel(valor){
+  const original = String(valor ?? "").trim();
+  if (!original) return { tel: "", aviso: "" };
+  let d = original.replace(/\D/g, "");
+  if (d.startsWith("00")) d = d.slice(2);
+  else if (!original.startsWith("+")) {
+    if (d.length === 11 && d[0] === "0") d = "58" + d.slice(1);       // 0412-1234567 / 0261-1234567
+    else if (d.length === 10 && /^[24]/.test(d)) d = "58" + d;         // 4121234567 (Excel borró el 0)
+  }
+  const venezuela = d.startsWith("58");
+  const valido = venezuela ? d.length === 12 : d.length >= 11 && d.length <= 15;
+  return { tel: d, aviso: valido ? "" : "Revisar teléfono" };
+}
+function verTel(t){
+  if (!t) return "—";
+  if (t.startsWith("58") && t.length === 12) return `+58 ${t.slice(2,5)}-${t.slice(5,8)}-${t.slice(8)}`;
+  if (t.startsWith("1") && t.length === 11) return `+1 ${t.slice(1,4)}-${t.slice(4,7)}-${t.slice(7)}`;
+  return "+" + t;
+}
+
+/* ---------- Llamadas a las funciones ---------- */
 function clave(){ try { return localStorage.getItem("panel-clave") || ""; } catch(e){ return ""; } }
-async function api(metodo, ruta = "", cuerpo, reintento = true){
-  const resp = await fetch(API + ruta, {
+async function api(url, metodo, ruta = "", cuerpo, reintento = true){
+  const resp = await fetch(url + ruta, {
     method: metodo,
-    headers: { ...(clave() ? { "x-clave": clave() } : {}), ...(cuerpo ? { "content-type": "application/json" } : {}) },
+    headers: { "x-panel": PANEL, ...(clave() ? { "x-clave": clave() } : {}), ...(cuerpo ? { "content-type": "application/json" } : {}) },
     body: cuerpo ? JSON.stringify(cuerpo) : undefined,
     cache: "no-store",
   });
   let datos = null; try { datos = await resp.json(); } catch(e) {}
-  if (resp.status === 401 && reintento) {
+  if (resp.status === 401 && reintento && url === API && datos && /contraseña/i.test(datos.error || "")) {
     const c = prompt("Este panel ahora pide contraseña:");
-    if (c) { try { localStorage.setItem("panel-clave", c); } catch(e) {} return api(metodo, ruta, cuerpo, false); }
+    if (c) { try { localStorage.setItem("panel-clave", c); } catch(e) {} return api(url, metodo, ruta, cuerpo, false); }
   }
   if (!resp.ok) throw new Error((datos && datos.error) || ("Error " + resp.status));
   return datos;
@@ -165,10 +214,10 @@ function filasDesdeMatriz(matriz){
   return matriz.map(f => ({
     nombre: String(f[0] ?? "").trim().replace(/\s+/g, " "),
     pasesTxt: String(f[1] ?? "").trim(),
-    tel: String(f[2] ?? "").replace(/\D/g, ""),
+    ...formatearTel(typeof f[2] === "number" ? Math.round(f[2]).toString() : f[2]),
   }))
   .filter((f, i) => f.nombre && !(i === 0 && !/\d/.test(f.pasesTxt) && /nombre|invitad/i.test(f.nombre)))
-  .map(f => ({ nombre: f.nombre, pases: Math.max(1, Math.min(20, parseInt(f.pasesTxt, 10) || 1)), sinPases: !/\d/.test(f.pasesTxt), tel: f.tel }));
+  .map(f => ({ nombre: f.nombre, pases: Math.max(1, Math.min(20, parseInt(f.pasesTxt, 10) || 1)), sinPases: !/\d/.test(f.pasesTxt), tel: f.tel, aviso: f.aviso }));
 }
 
 async function leerArchivo(file){
@@ -182,7 +231,8 @@ async function leerArchivo(file){
     } else {
       if (!window.XLSX) throw new Error("No cargó el lector de Excel. Revisa tu conexión o usa la opción de pegar.");
       const libro = XLSX.read(await file.arrayBuffer(), { type: "array" });
-      matriz = XLSX.utils.sheet_to_json(libro.Sheets[libro.SheetNames[0]], { header: 1, raw: false, defval: "" });
+      // raw: así los teléfonos largos no llegan en notación científica (5,84E+11)
+      matriz = XLSX.utils.sheet_to_json(libro.Sheets[libro.SheetNames[0]], { header: 1, raw: true, defval: "" });
     }
     revisar(filasDesdeMatriz(matriz));
   } catch(e) { estado("estadoGuardar", "No pude leer el archivo: " + e.message, "error"); }
@@ -194,11 +244,16 @@ function revisar(filas){
   revision = filas.map(f => {
     const codigo = normalizarCodigo(f.nombre);
     let nota;
+    const previo = existentes[codigo];
     if (!codigo) nota = { clase: "existe", texto: "Sin letras válidas" };
     else if (vistos[codigo]) nota = { clase: "existe", texto: "Repetido en el Excel" };
-    else if (existentes[codigo]) nota = existentes[codigo].pases === f.pases && existentes[codigo].nombre === f.nombre
-      ? { clase: "existe", texto: "Ya guardado, sin cambios" }
-      : { clase: "existe", texto: `Se actualiza (${existentes[codigo].pases} → ${f.pases} pases)` };
+    else if (previo) {
+      const cambios = [];
+      if (previo.pases !== f.pases) cambios.push(`${previo.pases} → ${f.pases} pases`);
+      if (previo.nombre !== f.nombre) cambios.push("nombre");
+      if (f.tel && telDe(previo) !== f.tel) cambios.push(telDe(previo) ? "teléfono" : "se agrega teléfono");
+      nota = cambios.length ? { clase: "existe", texto: "Se actualiza: " + cambios.join(", ") } : { clase: "existe", texto: "Ya guardado, sin cambios" };
+    }
     else nota = { clase: "nuevo", texto: f.sinPases ? "Nuevo · sin pases, se toma 1" : "Nuevo" };
     const valido = !!codigo && !vistos[codigo];
     if (codigo) vistos[codigo] = true;
@@ -208,27 +263,27 @@ function revisar(filas){
   $("tablaRevision").hidden = !revision.length && !aBorrar.length;
   $("cuerpoRevision").innerHTML = revision.map((f, i) => `<tr>
       <td>${i + 1}</td><td>${esc(f.nombre)}</td><td>${f.pases}</td>
+      <td class="tel">${esc(verTel(f.tel))}${f.aviso ? ` <span class="etiqueta revisar">${f.aviso}</span>` : ""}</td>
       <td class="link">${f.codigo ? esc(BASE + f.codigo) : "—"}</td>
       <td><span class="etiqueta ${f.nota.clase}">${esc(f.nota.texto)}</span></td></tr>`).join("")
-    + aBorrar.map(g => `<tr><td>—</td><td>${esc(g.nombre)}</td><td>${g.pases}</td><td class="link">${esc(BASE + g.codigo)}</td>
+    + aBorrar.map(g => `<tr><td>—</td><td>${esc(g.nombre)}</td><td>${g.pases}</td><td class="tel">${esc(verTel(telDe(g)))}</td><td class="link">${esc(BASE + g.codigo)}</td>
       <td><span class="etiqueta borrar">Se elimina (no está en el Excel)</span></td></tr>`).join("");
   const validos = revision.filter(f => f.valido).length;
+  const revisarTel = revision.filter(f => f.aviso).length;
   $("guardar").disabled = !validos;
   estado("estadoGuardar", revision.length
-    ? `${validos} invitado(s) listos para guardar${aBorrar.length ? ` · ${aBorrar.length} se eliminarán` : ""}. Revisa y pulsa "Guardar en la invitación".`
+    ? `${validos} invitado(s) listos para guardar${aBorrar.length ? ` · ${aBorrar.length} se eliminarán` : ""}${revisarTel ? ` · ${revisarTel} teléfono(s) para revisar` : ""}. Revisa y pulsa "Guardar en la invitación".`
     : "No encontré invitados en el archivo. La columna A debe tener los nombres.", revision.length ? "" : "error");
 }
 
 async function guardar(){
-  const lote = revision.filter(f => f.valido).map(({ nombre, pases, codigo }) => ({ nombre, pases, codigo }));
+  const lote = revision.filter(f => f.valido).map(({ nombre, pases, codigo, tel }) => ({ nombre, pases, codigo, tel }));
   if (!lote.length) return;
   const reemplazar = $("reemplazar").checked;
   if (reemplazar && !confirm("Se eliminarán los invitados que no estén en este Excel. ¿Continuar?")) return;
   $("guardar").disabled = true; estado("estadoGuardar", "Guardando…");
   try {
-    const d = await api("POST", "", { invitados: lote, reemplazar });
-    revision.filter(f => f.valido && f.tel).forEach(f => telefonos[f.codigo] = f.tel);
-    guardarTelefonos();
+    const d = await api(API, "POST", "", { invitados: lote, reemplazar });
     const nuevos = d.resultado.filter(r => r.estado === "nuevo").length;
     const act = d.resultado.filter(r => r.estado === "actualizado").length;
     const del = (d.eliminados || []).length;
@@ -241,53 +296,133 @@ async function guardar(){
   }
 }
 
-/* ---------- Invitados guardados ---------- */
+/* ---------- Invitados guardados y mensajes ---------- */
 async function cargarGuardados(){
   try {
-    const d = await api("GET");
+    const d = await api(API, "GET");
     guardados = d.invitados || [];
     pintarGuardados();
   } catch(e) { $("resumen").textContent = "No pude cargar la lista: " + e.message; }
 }
 
+const mensajeDe = g => $("mensaje").value.replace(/\{nombre\}/g, g.nombre).replace(/\{link\}/g, BASE + g.codigo).replace(/\{pases\}/g, pasesTexto(g.pases));
+const whatsappDe = g => "https://wa.me/" + telDe(g) + "?text=" + encodeURIComponent(mensajeDe(g));
+
+/* Respuesta más reciente por invitación */
+function ultimaRespuestaPorCodigo(){
+  const m = {};
+  respuestas.forEach(r => { const k = r.codigo || normalizarCodigo(r.invitacion || r.nombre); if (k) m[k] = r; });
+  return m;
+}
+const textoRespuesta = r => !r ? "Pendiente" : (r.asistencia === "Sí asistirá" ? `Sí (${r.asistentes})` : "No asistirá");
+
 function pintarGuardados(){
   const filtro = normalizarCodigo($("buscar").value);
   const lista = filtro ? guardados.filter(g => g.codigo.includes(filtro)) : guardados;
   const total = guardados.reduce((s, g) => s + g.pases, 0);
+  const conTel = guardados.filter(g => telDe(g)).length;
   $("resumen").innerHTML = guardados.length
-    ? `<b>${guardados.length}</b> invitaciones · <b>${total}</b> pases en total`
+    ? `<b>${guardados.length}</b> invitaciones · <b>${total}</b> pases en total · <b>${conTel}</b> con teléfono`
     : "Todavía no hay invitados guardados.";
-  const tpl = $("mensaje").value;
+  const ult = ultimaRespuestaPorCodigo();
   $("cuerpoGuardados").innerHTML = lista.map((g, i) => {
-    const link = BASE + g.codigo;
-    const msg = encodeURIComponent(tpl.replace(/\{nombre\}/g, g.nombre).replace(/\{link\}/g, link).replace(/\{pases\}/g, pasesTexto(g.pases)));
+    const r = ult[g.codigo];
+    const clase = !r ? "" : (r.asistencia === "Sí asistirá" ? "si" : "no");
     return `<tr>
       <td>${i + 1}</td><td>${esc(g.nombre)}</td><td>${g.pases}</td>
-      <td class="link">${esc(link)}</td>
+      <td class="tel">${esc(verTel(telDe(g)))}</td>
+      <td class="${clase}">${esc(textoRespuesta(r))}</td>
       <td class="acciones">
-        <button data-copiar="${esc(g.codigo)}">Copiar</button>
-        <a class="btn" href="https://wa.me/${esc(telefonos[g.codigo] || "")}?text=${msg}" target="_blank" rel="noopener">WhatsApp</a>
-        <a class="btn" href="${esc(link)}" target="_blank" rel="noopener">Ver</a>
+        <a class="btn" href="${esc(whatsappDe(g))}" target="_blank" rel="noopener">WhatsApp</a>
+        <button data-copiar-msg="${esc(g.codigo)}">Copiar mensaje</button>
+        <button data-copiar="${esc(g.codigo)}">Copiar link</button>
+        <a class="btn" href="${esc(BASE + g.codigo)}" target="_blank" rel="noopener">Ver</a>
         <button class="peligro" data-eliminar="${esc(g.codigo)}">Eliminar</button>
       </td>
     </tr>`;
-  }).join("") || `<tr><td colspan="5" style="color:var(--suave)">${guardados.length ? "Sin resultados para esa búsqueda." : "Sube tu Excel en el paso 1."}</td></tr>`;
+  }).join("") || `<tr><td colspan="6" style="color:var(--suave)">${guardados.length ? "Sin resultados para esa búsqueda." : "Sube el Excel en el paso 1."}</td></tr>`;
 }
 
 async function eliminar(codigo){
   const g = guardados.find(x => x.codigo === codigo);
   if (!g || !confirm(`¿Eliminar a "${g.nombre}"? Su link dejará de mostrar su nombre.`)) return;
-  try { await api("DELETE", "?c=" + encodeURIComponent(codigo)); await cargarGuardados(); }
+  try { await api(API, "DELETE", "?c=" + encodeURIComponent(codigo)); await cargarGuardados(); }
   catch(e) { alert("No se pudo eliminar: " + e.message); }
 }
 
-function descargarCSV(){
-  const q = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
-  const lineas = [["Invitado","Pases","Telefono","Link"].map(q).join(";")]
-    .concat(guardados.map(g => [g.nombre, g.pases, telefonos[g.codigo] || "", BASE + g.codigo].map(q).join(";")));
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["﻿" + lineas.join("\r\n")], { type: "text/csv;charset=utf-8" }));
-  a.download = "invitados_boda.csv"; document.body.appendChild(a); a.click(); a.remove();
+function descargarLibro(hojas, nombreArchivo){
+  if (!window.XLSX) { alert("No cargó el generador de Excel. Revisa tu conexión y recarga la página."); return; }
+  const libro = XLSX.utils.book_new();
+  hojas.forEach(h => XLSX.utils.book_append_sheet(libro, h.hoja, h.nombre));
+  XLSX.writeFile(libro, nombreArchivo);
+}
+
+function descargarMensajes(){
+  if (!guardados.length) { alert("Todavía no hay invitados guardados."); return; }
+  const ult = ultimaRespuestaPorCodigo();
+  const filas = [["#", "Invitado", "Pases", "Teléfono", "Abrir chat de WhatsApp", "Mensaje", "Link de la invitación", "Respuesta", "Enviado"]]
+    .concat(guardados.map((g, i) => [i + 1, g.nombre, g.pases, telDe(g) ? verTel(telDe(g)) : "", telDe(g) ? "Abrir chat" : "Elegir contacto", mensajeDe(g), BASE + g.codigo, textoRespuesta(ult[g.codigo]), ""]));
+  const hoja = XLSX.utils.aoa_to_sheet(filas);
+  guardados.forEach((g, i) => {
+    const celda = hoja[XLSX.utils.encode_cell({ r: i + 1, c: 4 })];
+    celda.l = { Target: whatsappDe(g), Tooltip: "Abre WhatsApp con el mensaje ya escrito" };
+    const link = hoja[XLSX.utils.encode_cell({ r: i + 1, c: 6 })];
+    link.l = { Target: BASE + g.codigo };
+  });
+  hoja["!cols"] = [{ wch: 5 }, { wch: 34 }, { wch: 7 }, { wch: 18 }, { wch: 18 }, { wch: 70 }, { wch: 52 }, { wch: 14 }, { wch: 10 }];
+  hoja["!autofilter"] = { ref: "A1:I" + (guardados.length + 1) };
+  descargarLibro([{ hoja, nombre: "Mensajes" }], "mensajes_whatsapp_boda.xlsx");
+}
+
+/* ---------- Confirmaciones ---------- */
+async function cargarRespuestas(){
+  try {
+    const d = await api(API_RESP, "GET");
+    respuestas = d.respuestas || [];
+  } catch(e) { respuestas = []; $("cifras").innerHTML = `<div class="estado error">No pude cargar las confirmaciones: ${esc(e.message)}</div>`; return; }
+  pintarRespuestas(); pintarGuardados();
+}
+
+const fechaCorta = iso => { try { return new Date(iso).toLocaleString("es-VE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); } catch(e) { return iso; } };
+
+function pintarRespuestas(){
+  const ult = Object.values(ultimaRespuestaPorCodigo());
+  const si = ult.filter(r => r.asistencia === "Sí asistirá");
+  const personas = si.reduce((s, r) => s + (parseInt(r.asistentes, 10) || 0), 0);
+  const no = ult.filter(r => r.asistencia !== "Sí asistirá").length;
+  const respondieron = new Set(ult.map(r => r.codigo || normalizarCodigo(r.invitacion || r.nombre)));
+  const pendientes = guardados.filter(g => !respondieron.has(g.codigo)).length;
+  $("cifras").innerHTML = [
+    [personas, "personas asisten"], [si.length, "invitaciones: sí"], [no, "no asistirán"], [pendientes, "pendientes"],
+  ].map(([n, t]) => `<div class="cifra"><b>${n}</b><span>${t}</span></div>`).join("");
+  $("cuerpoResp").innerHTML = respuestas.slice().reverse().map(r => `<tr>
+      <td style="white-space:nowrap">${esc(fechaCorta(r.fecha))}</td>
+      <td>${esc(r.invitacion || "—")}</td><td>${esc(r.nombre)}</td>
+      <td class="${r.asistencia === "Sí asistirá" ? "si" : "no"}">${esc(r.asistencia)}</td>
+      <td>${esc(r.asistentes)}${r.pases_asignados ? " de " + esc(r.pases_asignados) : ""}</td>
+      <td>${esc(r.restricciones || "")}</td><td class="msg">${esc(r.mensaje || "")}</td>
+      <td><button class="peligro" data-borrar-resp="${esc(r.clave)}">Borrar</button></td>
+    </tr>`).join("") || `<tr><td colspan="8" style="color:var(--suave)">Todavía no llegan confirmaciones.</td></tr>`;
+}
+
+function descargarRespuestas(){
+  const h1 = XLSX.utils.aoa_to_sheet([["Fecha", "Invitación", "Link", "Pases asignados", "Nombre", "Respuesta", "Asisten", "Restricciones", "Mensaje"]]
+    .concat(respuestas.map(r => [new Date(r.fecha), r.invitacion, r.codigo ? BASE + r.codigo : "", parseInt(r.pases_asignados, 10) || "", r.nombre, r.asistencia, parseInt(r.asistentes, 10) || 0, r.restricciones, r.mensaje])), { cellDates: true });
+  h1["!cols"] = [{ wch: 18 }, { wch: 30 }, { wch: 44 }, { wch: 9 }, { wch: 26 }, { wch: 14 }, { wch: 8 }, { wch: 28 }, { wch: 50 }];
+  const ult = ultimaRespuestaPorCodigo();
+  const h2 = XLSX.utils.aoa_to_sheet([["Invitado", "Pases asignados", "Teléfono", "Respuesta", "Asisten", "Nombre de quien respondió", "Restricciones", "Fecha"]]
+    .concat(guardados.map(g => { const r = ult[g.codigo];
+      return [g.nombre, g.pases, telDe(g) ? verTel(telDe(g)) : "", r ? r.asistencia : "Pendiente", r ? (parseInt(r.asistentes, 10) || 0) : "", r ? r.nombre : "", r ? r.restricciones : "", r ? new Date(r.fecha) : ""]; })), { cellDates: true });
+  h2["!cols"] = [{ wch: 34 }, { wch: 9 }, { wch: 18 }, { wch: 14 }, { wch: 8 }, { wch: 26 }, { wch: 28 }, { wch: 18 }];
+  h2["!autofilter"] = { ref: "A1:H" + (guardados.length + 1) };
+  descargarLibro([{ hoja: h1, nombre: "Confirmaciones" }, { hoja: h2, nombre: "Por invitación" }], "confirmaciones_boda.xlsx");
+}
+
+async function borrarRespuesta(k){
+  const r = respuestas.find(x => x.clave === k);
+  if (!r || !confirm(`¿Borrar la respuesta de "${r.nombre}"? No se puede deshacer.`)) return;
+  try { await api(API_RESP, "DELETE", "?k=" + encodeURIComponent(k)); await cargarRespuestas(); }
+  catch(e) { alert("No se pudo borrar: " + e.message); }
 }
 
 /* ---------- Eventos ---------- */
@@ -305,21 +440,28 @@ $("guardar").addEventListener("click", guardar);
 $("recargar").addEventListener("click", cargarGuardados);
 $("buscar").addEventListener("input", pintarGuardados);
 $("mensaje").addEventListener("input", pintarGuardados);
-$("csv").addEventListener("click", descargarCSV);
-$("cuerpoGuardados").addEventListener("click", async e => {
+$("xlsMensajes").addEventListener("click", descargarMensajes);
+$("recargarResp").addEventListener("click", cargarRespuestas);
+$("xlsResp").addEventListener("click", descargarRespuestas);
+async function copiar(boton, texto, etiqueta){
+  try { await navigator.clipboard.writeText(texto); boton.textContent = "¡Copiado!"; }
+  catch(_) { prompt("Copia el texto:", texto); }
+  setTimeout(() => boton.textContent = etiqueta, 1500);
+}
+$("cuerpoGuardados").addEventListener("click", e => {
+  const m = e.target.closest("[data-copiar-msg]");
+  if (m) { const g = guardados.find(x => x.codigo === m.dataset.copiarMsg); if (g) copiar(m, mensajeDe(g), "Copiar mensaje"); return; }
   const c = e.target.closest("[data-copiar]");
-  if (c) {
-    const link = BASE + c.dataset.copiar;
-    try { await navigator.clipboard.writeText(link); c.textContent = "¡Copiado!"; }
-    catch(_) { prompt("Copia el link:", link); }
-    setTimeout(() => c.textContent = "Copiar", 1500);
-    return;
-  }
+  if (c) { copiar(c, BASE + c.dataset.copiar, "Copiar link"); return; }
   const d = e.target.closest("[data-eliminar]");
   if (d) eliminar(d.dataset.eliminar);
 });
+$("cuerpoResp").addEventListener("click", e => {
+  const b = e.target.closest("[data-borrar-resp]");
+  if (b) borrarRespuesta(b.dataset.borrarResp);
+});
 
-cargarGuardados();
+cargarGuardados().then(cargarRespuestas);
 </script>
 </body>
 </html>

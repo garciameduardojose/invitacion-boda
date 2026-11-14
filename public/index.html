@@ -898,12 +898,20 @@ form.addEventListener("submit", async e => {
   btn.disabled = true; btn.textContent = "Enviando…";
   estado.className = "estado"; estado.textContent = "";
   try {
-    const resp = await fetch("/", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams(datos).toString()
-    });
-    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    // Se guarda en dos lugares: Netlify Forms y la lista del panel. Basta con que uno funcione.
+    const envios = await Promise.allSettled([
+      fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(datos).toString()
+      }),
+      fetch("/.netlify/functions/respuestas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(datos))
+      })
+    ]);
+    if (!envios.some(x => x.status === "fulfilled" && x.value.ok)) throw new Error("No se pudo enviar");
     const r = { asistencia: datos.get("asistencia"), asistentes: String(datos.get("asistentes")) };
     guardarLocal(r);
     mostrarGracias(r);

@@ -3,8 +3,10 @@
 // Público (la invitación):
 //   GET  /.netlify/functions/invitados?c=carola_marcela_clarissa  -> { n, p }  (solo ese invitado)
 //
-// Panel de invitados (dirección privada). Si existe ADMIN_PASSWORD en Netlify, se exige en la
-// cabecera x-clave; si no existe, el panel funciona sin contraseña.
+// Panel de invitados (dirección privada). El panel envía la cabecera x-panel con la clave de su
+// dirección; sin ella no se puede ver la lista ni los teléfonos. Si existe ADMIN_PASSWORD en
+// Netlify, además se exige en la cabecera x-clave.
+// Cada invitado guarda: codigo, nombre, pases, tel (solo dígitos, con código de país).
 //   GET    /.netlify/functions/invitados                 -> { invitados: [...] }
 //   POST   /.netlify/functions/invitados  { invitados:[{nombre, pases}], reemplazar? }  -> guarda / actualiza
 //          reemplazar: true -> además elimina a quien no venga en la lista (sincroniza con el Excel)
@@ -25,6 +27,8 @@ const json = (data, status = 200) => new Response(JSON.stringify(data), {
   headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
 });
 
+const PANEL = "odzjhdfq";
+const limpiarTel = t => String(t ?? "").replace(/\D/g, "").slice(0, 15);
 const limpiarPases = p => Math.max(1, Math.min(20, parseInt(p, 10) || 1));
 const resumen = h => createHash("sha256").update(String(h)).digest();
 
@@ -46,6 +50,7 @@ export async function manejar(req, store, claveAdmin) {
   }
 
   // Todo lo demás es para el panel. La contraseña es opcional.
+  if (req.headers.get("x-panel") !== PANEL) return json({ error: "No autorizado" }, 401);
   if (claveAdmin && !claveCorrecta(req.headers.get("x-clave"), claveAdmin)) {
     await new Promise(r => setTimeout(r, 700));
     return json({ error: "Contraseña incorrecta" }, 401);
@@ -76,6 +81,7 @@ export async function manejar(req, store, claveAdmin) {
         codigo,
         nombre,
         pases: limpiarPases(it.pases),
+        tel: limpiarTel(it.tel) || (previo && previo.tel) || "",
         creado: previo && previo.creado ? previo.creado : ahora,
         actualizado: ahora,
       };
