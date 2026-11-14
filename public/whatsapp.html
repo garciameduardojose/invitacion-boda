@@ -18,8 +18,8 @@
 </div>
 <script>
 /* Puente para los enlaces "Abrir chat" del Excel de mensajes.
-   Excel daña los emojis (💚) dentro de un enlace, así que el mensaje viaja aquí en base64
-   (solo letras y números) y este navegador arma el enlace de WhatsApp correctamente. */
+   El mensaje viaja en base64 (solo letras y números, para que Excel no lo dañe) y aquí se arma
+   el enlace de WhatsApp. Lo usan el panel y el Excel de mensajes. */
 (function(){
   const q = new URLSearchParams(location.search);
   const tel = (q.get("t") || "").replace(/\D/g, "");
@@ -29,7 +29,10 @@
     const bin = atob(b64 + "===".slice((b64.length + 3) % 4));
     msg = new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
   } catch(e) { msg = ""; }
-  const url = "https://wa.me/" + tel + (msg ? "?text=" + encodeURIComponent(msg) : "");
+  // wa.me daña los emojis al redirigir; api.whatsapp.com (celular) y web.whatsapp.com (computadora) no
+  const movil = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  const params = [tel ? "phone=" + tel : "", msg ? "text=" + encodeURIComponent(msg) : ""].filter(Boolean).join("&");
+  const url = (movil ? "https://api.whatsapp.com/send" : "https://web.whatsapp.com/send") + (params ? "?" + params : "");
   const a = document.getElementById("ir");
   a.href = url; a.hidden = false;
   if (!msg) document.getElementById("txt").textContent = "No se pudo leer el mensaje, pero puedes abrir el chat:";

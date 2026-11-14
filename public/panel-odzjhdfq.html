@@ -306,13 +306,12 @@ async function cargarGuardados(){
 }
 
 const mensajeDe = g => $("mensaje").value.replace(/\{nombre\}/g, g.nombre).replace(/\{link\}/g, BASE + g.codigo).replace(/\{pases\}/g, pasesTexto(g.pases));
-const whatsappDe = g => "https://wa.me/" + telDe(g) + "?text=" + encodeURIComponent(mensajeDe(g));
-/* Para el Excel: Excel daña los emojis dentro de los enlaces, así que el mensaje va en base64 a whatsapp.html */
+/* Los botones de WhatsApp pasan por whatsapp.html: el enlace corto de WhatsApp daña el 💚 y Excel también si va dentro del enlace */
 function base64url(texto){
   let bin = ""; new TextEncoder().encode(texto).forEach(b => bin += String.fromCharCode(b));
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
-const whatsappExcelDe = g => BASE + "whatsapp.html?t=" + telDe(g) + "&m=" + base64url(mensajeDe(g));
+const whatsappDe = g => BASE + "whatsapp.html?t=" + telDe(g) + "&m=" + base64url(mensajeDe(g));
 
 /* Respuesta más reciente por invitación */
 function ultimaRespuestaPorCodigo(){
@@ -371,7 +370,7 @@ function descargarMensajes(){
   const hoja = XLSX.utils.aoa_to_sheet(filas);
   guardados.forEach((g, i) => {
     const celda = hoja[XLSX.utils.encode_cell({ r: i + 1, c: 4 })];
-    celda.l = { Target: whatsappExcelDe(g), Tooltip: "Abre WhatsApp con el mensaje ya escrito" };
+    celda.l = { Target: whatsappDe(g), Tooltip: "Abre WhatsApp con el mensaje ya escrito" };
     const link = hoja[XLSX.utils.encode_cell({ r: i + 1, c: 6 })];
     link.l = { Target: BASE + g.codigo };
   });
