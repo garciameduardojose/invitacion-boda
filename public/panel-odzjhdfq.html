@@ -110,6 +110,12 @@ Carola, Marcela y Clarissa&#9;3"></textarea>
     <div class="resumen" id="resumen">Cargando…</div>
     <div class="fila" style="margin-top:0;margin-bottom:6px">
       <input type="search" id="buscar" placeholder="Buscar invitado…" style="max-width:320px">
+      <select id="filtroResp" style="font:inherit;padding:9px 10px;border:1px solid var(--linea);border-radius:8px;background:#fff;color:var(--tinta)">
+        <option value="">Todas las respuestas</option>
+        <option value="pendiente">Pendientes</option>
+        <option value="si">Sí asistirán</option>
+        <option value="no">No asistirán</option>
+      </select>
       <button id="recargar" type="button">Actualizar</button>
       <button class="lleno" id="xlsMensajes" type="button">Descargar Excel de mensajes</button>
     </div>
@@ -323,13 +329,18 @@ const textoRespuesta = r => !r ? "Pendiente" : (r.asistencia === "Sí asistirá"
 
 function pintarGuardados(){
   const filtro = normalizarCodigo($("buscar").value);
-  const lista = filtro ? guardados.filter(g => g.codigo.includes(filtro)) : guardados;
+  const ult = ultimaRespuestaPorCodigo();
+  const estadoDe = r => !r ? "pendiente" : (r.asistencia === "Sí asistirá" ? "si" : "no");
+  const fResp = $("filtroResp").value;
+  const lista = guardados
+    .filter(g => !filtro || g.codigo.includes(filtro))
+    .filter(g => !fResp || estadoDe(ult[g.codigo]) === fResp);
   const total = guardados.reduce((s, g) => s + g.pases, 0);
   const conTel = guardados.filter(g => telDe(g)).length;
   $("resumen").innerHTML = guardados.length
     ? `<b>${guardados.length}</b> invitaciones · <b>${total}</b> pases en total · <b>${conTel}</b> con teléfono`
     : "Todavía no hay invitados guardados.";
-  const ult = ultimaRespuestaPorCodigo();
+  if (guardados.length && (filtro || fResp)) $("resumen").innerHTML += ` · mostrando <b>${lista.length}</b>`;
   $("cuerpoGuardados").innerHTML = lista.map((g, i) => {
     const r = ult[g.codigo];
     const clase = !r ? "" : (r.asistencia === "Sí asistirá" ? "si" : "no");
@@ -345,7 +356,7 @@ function pintarGuardados(){
         <button class="peligro" data-eliminar="${esc(g.codigo)}">Eliminar</button>
       </td>
     </tr>`;
-  }).join("") || `<tr><td colspan="6" style="color:var(--suave)">${guardados.length ? "Sin resultados para esa búsqueda." : "Sube el Excel en el paso 1."}</td></tr>`;
+  }).join("") || `<tr><td colspan="6" style="color:var(--suave)">${guardados.length ? "Sin resultados para ese filtro." : "Sube el Excel en el paso 1."}</td></tr>`;
 }
 
 async function eliminar(codigo){
@@ -444,6 +455,7 @@ $("reemplazar").addEventListener("change", () => { if (revision.length) revisar(
 $("guardar").addEventListener("click", guardar);
 $("recargar").addEventListener("click", cargarGuardados);
 $("buscar").addEventListener("input", pintarGuardados);
+$("filtroResp").addEventListener("change", pintarGuardados);
 $("mensaje").addEventListener("input", pintarGuardados);
 $("xlsMensajes").addEventListener("click", descargarMensajes);
 $("recargarResp").addEventListener("click", cargarRespuestas);
