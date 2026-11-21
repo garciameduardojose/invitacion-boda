@@ -322,7 +322,8 @@ const whatsappDe = g => BASE + "whatsapp.html?t=" + telDe(g) + "&m=" + base64url
 /* Respuesta más reciente por invitación */
 function ultimaRespuestaPorCodigo(){
   const m = {};
-  respuestas.forEach(r => { const k = r.codigo || normalizarCodigo(r.invitacion || r.nombre); if (k) m[k] = r; });
+  // En orden de llegada: si alguien responde dos veces, cuenta solo la última respuesta
+  respuestas.slice().sort((x, y) => String(x.fecha).localeCompare(String(y.fecha))).forEach(r => { const k = r.codigo || normalizarCodigo(r.invitacion || r.nombre); if (k) m[k] = r; });
   return m;
 }
 const textoRespuesta = r => !r ? "Pendiente" : (r.asistencia === "Sí asistirá" ? `Sí (${r.asistentes})` : "No asistirá");
@@ -402,14 +403,24 @@ async function cargarRespuestas(){
 const fechaCorta = iso => { try { return new Date(iso).toLocaleString("es-VE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); } catch(e) { return iso; } };
 
 function pintarRespuestas(){
-  const ult = Object.values(ultimaRespuestaPorCodigo());
-  const si = ult.filter(r => r.asistencia === "Sí asistirá");
-  const personas = si.reduce((s, r) => s + (parseInt(r.asistentes, 10) || 0), 0);
-  const no = ult.filter(r => r.asistencia !== "Sí asistirá").length;
-  const respondieron = new Set(ult.map(r => r.codigo || normalizarCodigo(r.invitacion || r.nombre)));
-  const pendientes = guardados.filter(g => !respondieron.has(g.codigo)).length;
+  // Todo se cuenta en PERSONAS, con la última respuesta de cada invitación
+  const ultMap = ultimaRespuestaPorCodigo();
+  const pasesDe = Object.fromEntries(guardados.map(g => [g.codigo, g.pases]));
+  let confirmadas = 0, noAsisten = 0;
+  Object.entries(ultMap).forEach(([codigo, r]) => {
+    const pases = pasesDe[codigo] || parseInt(r.pases_asignados, 10) || 0;
+    if (r.asistencia === "Sí asistirá") {
+      const van = parseInt(r.asistentes, 10) || 0;
+      confirmadas += van;
+      noAsisten += Math.max(0, pases - van);      // p. ej. invitación de 2 y confirma 1: 1 no asiste
+    } else {
+      noAsisten += pases || 1;
+    }
+  });
+  const pendientes = guardados.filter(g => !ultMap[g.codigo]).reduce((s, g) => s + g.pases, 0);
+  const invitadas = guardados.reduce((s, g) => s + g.pases, 0);
   $("cifras").innerHTML = [
-    [personas, "personas asisten"], [si.length, "invitaciones: sí"], [no, "no asistirán"], [pendientes, "pendientes"],
+    [confirmadas, "personas confirmadas"], [noAsisten, "personas no asistirán"], [pendientes, "personas pendientes"], [invitadas, "personas invitadas"],
   ].map(([n, t]) => `<div class="cifra"><b>${n}</b><span>${t}</span></div>`).join("");
   $("cuerpoResp").innerHTML = respuestas.slice().reverse().map(r => `<tr>
       <td style="white-space:nowrap">${esc(fechaCorta(r.fecha))}</td>
