@@ -69,6 +69,11 @@
   <h1>Invitados de la boda</h1>
   <p class="sub">Sube el Excel y cada invitado queda registrado con su nombre, sus pases y su teléfono. Desde aquí se envían los mensajes y se descargan las confirmaciones. Guarda esta página en tus marcadores: es privada.</p>
 
+  <form id="accesoPanel" class="tarjeta" hidden>
+    <label class="tit" for="clavePanel">Contraseña de administración</label>
+    <input id="clavePanel" type="password" required autocomplete="current-password">
+    <button type="submit">Entrar</button>
+  </form>
   <!-- 1. Subir -->
   <div class="tarjeta">
     <h2>1 · Subir invitados</h2>
@@ -199,7 +204,7 @@ function verTel(t){
 
 /* ---------- Llamadas a las funciones ---------- */
 function clave(){ try { return localStorage.getItem("panel-clave") || ""; } catch(e){ return ""; } }
-async function api(url, metodo, ruta = "", cuerpo, reintento = true){
+async function api(url, metodo, ruta = "", cuerpo){
   const resp = await fetch(url + ruta, {
     method: metodo,
     headers: { "x-panel": PANEL, ...(clave() ? { "x-clave": clave() } : {}), ...(cuerpo ? { "content-type": "application/json" } : {}) },
@@ -207,9 +212,10 @@ async function api(url, metodo, ruta = "", cuerpo, reintento = true){
     cache: "no-store",
   });
   let datos = null; try { datos = await resp.json(); } catch(e) {}
-  if (resp.status === 401 && reintento && url === API && datos && /contraseña/i.test(datos.error || "")) {
-    const c = prompt("Este panel ahora pide contraseña:");
-    if (c) { try { localStorage.setItem("panel-clave", c); } catch(e) {} return api(url, metodo, ruta, cuerpo, false); }
+  if (resp.status === 401 && url === API) {
+    $("accesoPanel").hidden = false;
+    $("clavePanel").focus();
+    throw new Error(clave() ? "Contraseña incorrecta. Inténtalo de nuevo." : "Introduce la contraseña para abrir el panel.");
   }
   if (!resp.ok) throw new Error((datos && datos.error) || ("Error " + resp.status));
   return datos;
@@ -512,6 +518,15 @@ $("cuerpoResp").addEventListener("click", e => {
   if (b) borrarRespuesta(b.dataset.borrarResp);
 });
 
+$("accesoPanel").addEventListener("submit", async e => {
+  e.preventDefault();
+  const campo = $("clavePanel");
+  localStorage.setItem("panel-clave", campo.value);
+  campo.value = "";
+  $("accesoPanel").hidden = true;
+  await cargarGuardados();
+  await cargarRespuestas();
+});
 cargarGuardados().then(cargarRespuestas);
 </script>
 </body>
