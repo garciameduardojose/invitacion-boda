@@ -11,7 +11,7 @@
 //   POST   /.netlify/functions/invitados  { invitados:[{nombre, pases}], reemplazar? }  -> guarda / actualiza
 //          reemplazar: true -> además elimina a quien no venga en la lista (sincroniza con el Excel)
 //   DELETE /.netlify/functions/invitados?c=codigo        -> elimina un invitado
-import { getStore } from "@netlify/blobs";
+import { getDeployStore, getStore } from "@netlify/blobs";
 import { createHash, timingSafeEqual } from "node:crypto";
 
 // Debe ser idéntico al de index.html y generador.html
@@ -37,7 +37,7 @@ function claveCorrecta(recibida, esperada) {
   return timingSafeEqual(resumen(recibida || ""), resumen(esperada));
 }
 
-export async function manejar(req, store, claveAdmin) {
+export async function manejar(req, store, claveAdmin, mesas) {
   const url = new URL(req.url);
 
   // Consulta pública de un solo invitado
@@ -56,10 +56,32 @@ export async function manejar(req, store, claveAdmin) {
     return json({ error: "Contraseña incorrecta" }, 401);
   }
 
+  const llaveMesa = invitado => invitado.codigo + "-" + (invitado.creado || "original");
+  if (req.method === "PATCH") {
+    if (!claveAdmin) return json({ error: "Configura la contraseña de administración para guardar mesas" }, 503);
+    const codigo = normalizarCodigo(url.searchParams.get("c"));
+    if (!codigo) return json({ error: "Código vacío" }, 400);
+    const datos = await req.json().catch(() => null);
+    if (typeof datos?.mesa !== "string" || datos.mesa.trim().length > 60) {
+      return json({ error: "La mesa debe tener como máximo 60 caracteres" }, 400);
+    }
+    const invitado = await store.get(codigo, { type: "json" });
+    if (!invitado) return json({ error: "Invitado no encontrado" }, 404);
+    const mesa = datos.mesa.trim();
+    await mesas.setJSON(llaveMesa(invitado), { mesa });
+    return json({ mesa });
+  }
+
   if (req.method === "GET") {
     const { blobs } = await store.list();
     const datos = await Promise.all(blobs.map(b => store.get(b.key, { type: "json" })));
     const invitados = datos.filter(Boolean).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+    if (claveAdmin && mesas) {
+      await Promise.all(invitados.map(async invitado => {
+        const asignacion = await mesas.get(llaveMesa(invitado), { type: "json" });
+        invitado.mesa = asignacion?.mesa || "";
+      }));
+    }
     return json({ invitados });
   }
 
@@ -112,5 +134,8 @@ export async function manejar(req, store, claveAdmin) {
 export default async (req) => {
   const store = getStore({ name: "invitados", consistency: "strong" });
   const clave = (globalThis.Netlify && Netlify.env.get("ADMIN_PASSWORD")) || process.env.ADMIN_PASSWORD || "";
-  return manejar(req, store, clave);
+  const opciones = { name: "asignaciones-mesas", consistency: "strong" };
+  const produccion = new URL(req.url).hostname === "boda-garciahernandez.netlify.app";
+  const mesas = produccion ? getStore(opciones) : getDeployStore(opciones);
+  return manejar(req, store, clave, mesas);
 };
