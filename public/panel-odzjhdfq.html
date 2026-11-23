@@ -69,6 +69,11 @@
   <h1>Invitados de la boda</h1>
   <p class="sub">Sube el Excel y cada invitado queda registrado con su nombre, sus pases y su teléfono. Desde aquí se envían los mensajes y se descargan las confirmaciones. Guarda esta página en tus marcadores: es privada.</p>
 
+  <form id="accesoPanel" class="tarjeta" hidden>
+    <label class="tit" for="clavePanel">Contraseña de administración</label>
+    <input id="clavePanel" type="password" required autocomplete="current-password">
+    <button type="submit">Entrar</button>
+  </form>
   <!-- 1. Subir -->
   <div class="tarjeta">
     <h2>1 · Subir invitados</h2>
@@ -128,7 +133,7 @@ Eduardo y María Virginia</textarea>
     <div class="ayuda">Usa <code>{nombre}</code>, <code>{link}</code> y <code>{pases}</code>. <b>WhatsApp</b> abre el chat del invitado con el mensaje ya escrito; <b>Copiar mensaje</b> lo copia para pegarlo donde quieras. El Excel de mensajes trae lo mismo, con un enlace "Abrir chat" por invitado.</div>
     <div class="tabla" style="margin-top:14px">
       <table>
-        <thead><tr><th>#</th><th>Invitado</th><th>Pases</th><th>Teléfono</th><th>Respuesta</th><th></th></tr></thead>
+        <thead><tr><th>#</th><th>Invitado</th><th>Pases</th><th>Teléfono</th><th>Respuesta</th><th>Mesa</th><th></th></tr></thead>
         <tbody id="cuerpoGuardados"></tbody>
       </table>
     </div>
@@ -199,7 +204,7 @@ function verTel(t){
 
 /* ---------- Llamadas a las funciones ---------- */
 function clave(){ try { return localStorage.getItem("panel-clave") || ""; } catch(e){ return ""; } }
-async function api(url, metodo, ruta = "", cuerpo, reintento = true){
+async function api(url, metodo, ruta = "", cuerpo){
   const resp = await fetch(url + ruta, {
     method: metodo,
     headers: { "x-panel": PANEL, ...(clave() ? { "x-clave": clave() } : {}), ...(cuerpo ? { "content-type": "application/json" } : {}) },
@@ -207,9 +212,10 @@ async function api(url, metodo, ruta = "", cuerpo, reintento = true){
     cache: "no-store",
   });
   let datos = null; try { datos = await resp.json(); } catch(e) {}
-  if (resp.status === 401 && reintento && url === API && datos && /contraseña/i.test(datos.error || "")) {
-    const c = prompt("Este panel ahora pide contraseña:");
-    if (c) { try { localStorage.setItem("panel-clave", c); } catch(e) {} return api(url, metodo, ruta, cuerpo, false); }
+  if (resp.status === 401 && url === API) {
+    $("accesoPanel").hidden = false;
+    $("clavePanel").focus();
+    throw new Error(clave() ? "Contraseña incorrecta. Inténtalo de nuevo." : "Introduce la contraseña para abrir el panel.");
   }
   if (!resp.ok) throw new Error((datos && datos.error) || ("Error " + resp.status));
   return datos;
@@ -349,6 +355,7 @@ function pintarGuardados(){
       <td>${i + 1}</td><td>${esc(g.nombre)}</td><td>${g.pases}</td>
       <td class="tel">${esc(verTel(telDe(g)))}</td>
       <td class="${clase}">${esc(textoRespuesta(r))}</td>
+      <td><input type="text" maxlength="60" value="${esc(g.mesa || '')}" placeholder="Sin mesa" aria-label="Mesa de ${esc(g.nombre)}" style="width:7.5rem"> <button type="button" data-mesa="${esc(g.codigo)}">Guardar</button><div role="status"></div></td>
       <td class="acciones">
         <a class="btn" href="${esc(whatsappDe(g))}" target="_blank" rel="noopener">WhatsApp</a>
         <button data-copiar-msg="${esc(g.codigo)}">Copiar mensaje</button>
@@ -357,7 +364,27 @@ function pintarGuardados(){
         <button class="peligro" data-eliminar="${esc(g.codigo)}">Eliminar</button>
       </td>
     </tr>`;
-  }).join("") || `<tr><td colspan="6" style="color:var(--suave)">${guardados.length ? "Sin resultados para ese filtro." : "Sube el Excel en el paso 1."}</td></tr>`;
+  }).join("") || `<tr><td colspan="7" style="color:var(--suave)">${guardados.length ? "Sin resultados para ese filtro." : "Sube el Excel en el paso 1."}</td></tr>`;
+}
+
+async function guardarMesa(boton){
+  const celda = boton.closest("td");
+  const input = celda.querySelector("input");
+  const aviso = celda.querySelector('[role="status"]');
+  const codigo = boton.dataset.mesa;
+  boton.disabled = input.disabled = true;
+  aviso.textContent = "Guardando…";
+  try {
+    const datos = await api(API, "PATCH", "?c=" + encodeURIComponent(codigo), { mesa: input.value.trim() });
+    const invitado = guardados.find(g => g.codigo === codigo);
+    if (invitado) invitado.mesa = datos.mesa;
+    input.value = datos.mesa;
+    aviso.textContent = datos.mesa ? "Mesa guardada" : "Sin mesa";
+  } catch (error) {
+    aviso.textContent = error.message;
+  } finally {
+    boton.disabled = input.disabled = false;
+  }
 }
 
 async function eliminar(codigo){
@@ -477,6 +504,8 @@ async function copiar(boton, texto, etiqueta){
   setTimeout(() => boton.textContent = etiqueta, 1500);
 }
 $("cuerpoGuardados").addEventListener("click", e => {
+  const mesa = e.target.closest("[data-mesa]");
+  if (mesa) { guardarMesa(mesa); return; }
   const m = e.target.closest("[data-copiar-msg]");
   if (m) { const g = guardados.find(x => x.codigo === m.dataset.copiarMsg); if (g) copiar(m, mensajeDe(g), "Copiar mensaje"); return; }
   const c = e.target.closest("[data-copiar]");
@@ -489,6 +518,15 @@ $("cuerpoResp").addEventListener("click", e => {
   if (b) borrarRespuesta(b.dataset.borrarResp);
 });
 
+$("accesoPanel").addEventListener("submit", async e => {
+  e.preventDefault();
+  const campo = $("clavePanel");
+  localStorage.setItem("panel-clave", campo.value);
+  campo.value = "";
+  $("accesoPanel").hidden = true;
+  await cargarGuardados();
+  await cargarRespuestas();
+});
 cargarGuardados().then(cargarRespuestas);
 </script>
 </body>
